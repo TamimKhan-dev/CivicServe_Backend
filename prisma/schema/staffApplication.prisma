@@ -1,0 +1,21 @@
+model StaffApplication {
+  id              String                 @id @default(uuid())
+  reason          String                 @db.Text
+  status          StaffApplicationStatus @default(PENDING)
+  reviewedAt      DateTime?
+  rejectionReason String?
+  reviewedBy      String?
+  userId          String
+  departmentId    String
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+
+  reviewer   User?      @relation("ApplicationReviewer", fields: [reviewedBy], references: [id], onDelete: SetNull)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  department Department @relation(fields: [departmentId], references: [id], onUpdate: Cascade)
+
+  @@index([userId])
+  @@index([departmentId])
+  @@index([status])
+  @@map("staffApplications")
+}

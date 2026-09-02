@@ -1,0 +1,16 @@
+model Category {
+  id           String    @id @default(uuid())
+  name         String    @db.VarChar(255)
+  description  String    @db.Text
+  isActive     Boolean   @default(true)
+  departmentId String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  department Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  requests   Request[]
+
+  @@index([isActive])
+  @@map("categories")
+}

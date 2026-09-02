@@ -1,0 +1,17 @@
+model Department {
+  id          String    @id @default(uuid())
+  name        String    @db.VarChar(255)
+  description String    @db.Text
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  requests          Request[]
+  categories        Category[]
+  services          Service[]
+  staffApplications StaffApplication[]
+
+  @@index([isActive])  
+  @@map("departments")
+}

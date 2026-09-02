@@ -3,3 +3,38 @@ enum Role {
   STAFF
   CITIZEN
 }
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum RequestType {
+  COMPLAINT
+  SERVICE_REQUEST
+}
+
+enum RequestStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  ASSIGNED
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+  REJECTED
+  CANCELLED
+}
+
+enum StaffApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+  REFUNDED
+}

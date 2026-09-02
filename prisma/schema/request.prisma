@@ -1,0 +1,35 @@
+model Request {
+  id              String        @id @default(uuid())
+  title           String        @db.VarChar(255)
+  description     String        @db.Text
+  type            RequestType   @default(COMPLAINT)
+  status          RequestStatus @default(SUBMITTED)
+  location        String        @db.VarChar(200)
+  imageUrl        String?
+  imagePublicId   String?
+  userId          String
+  assignedStaffId String?
+  categoryId      String
+  serviceId       String?
+  departmentId    String
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  deletedAt       DateTime?
+
+  user          User       @relation("CitizenRequests", fields: [userId], references: [id], onUpdate: Cascade)
+  assignedStaff User?      @relation("AssignedStaffRequests", fields: [assignedStaffId], references: [id], onDelete: Cascade)
+  category      Category   @relation(fields: [categoryId], references: [id], onUpdate: Cascade)
+  service       Service?   @relation(fields: [serviceId], references: [id], onUpdate: Cascade)
+  department    Department @relation(fields: [departmentId], references: [id], onUpdate: Cascade)
+
+  payment  Payment?
+  feedback Feedback?
+
+  @@index([userId])
+  @@index([assignedStaffId])
+  @@index([departmentId])
+  @@index([categoryId])
+  @@index([serviceId])
+  @@index([status])
+  @@map("requests")
+}
