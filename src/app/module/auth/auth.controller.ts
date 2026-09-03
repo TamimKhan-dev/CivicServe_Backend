@@ -7,6 +7,7 @@ import { createUserTokens } from "../../helpers/authTokens";
 import { AppError } from "../../utils/AppError";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
+import type { IRequestUser } from "./auth.interface";
 import { AuthService } from "./auth.service";
 
 const registerUser = catchAsync(
@@ -145,7 +146,25 @@ const logout = catchAsync(async (req: Request, res: Response, next: NextFunction
   });
 });
 
+const getMe = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  const user = req.authUser as IRequestUser;
+
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, "User information is missing in the request");
+  }
+
+  const result = await AuthService.getMe(user.userId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "User profile fetched successfully",
+    data: result,
+  });
+});
+
 export const AuthController = {
+  getMe,
   logout,
   verifyEmail,
   registerUser,

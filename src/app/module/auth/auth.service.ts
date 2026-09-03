@@ -115,7 +115,23 @@ const refreshToken = async (token: string) => {
   return userTokens;
 };
 
+const getMe = async (userId: string) => {
+  const isUserExist = await prisma.user.findUnique({
+    where: {
+      id: userId
+    },
+    omit: { password: true }
+  });
+
+  if (!isUserExist) {
+    throw new AppError(httpStatus.NOT_FOUND, "User not found!");
+  };
+
+  return isUserExist;
+};
+
 export const AuthService = {
+    getMe,
     verifyEmail,
     registerUser,
     refreshToken,
