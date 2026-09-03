@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import type { JwtPayload } from "jsonwebtoken";
-import { Role } from "../../generated/prisma/enums";
+import type { Role } from "../../generated/prisma/enums";
 import config from "../config";
 import { prisma } from "../lib/prisma";
 import { catchAsync } from "../utils/catchAsync";
@@ -57,8 +57,8 @@ export const auth = (...requiredRoles: Role[]) => {
             throw new Error("User not found. Please log in again.");
         }
 
-        if (user.status === "BLOCKED") {
-            throw new Error("Your account has been blocked. Please contact support.");
+        if (user.status === "SUSPENDED") {
+            throw new Error("Your account has been Suspended. Please contact support.");
         }
 
         req.user = {

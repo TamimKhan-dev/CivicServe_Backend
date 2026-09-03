@@ -1,6 +1,7 @@
 import app from "./app";
 import config from "./app/config";
 import { prisma } from "./app/lib/prisma";
+import { seedTesterAdmin, seedTesterStaff } from "./app/utils/seed";
 
 const PORT = config.port;
 
@@ -8,6 +9,9 @@ const main = async () => {
     try {
         await prisma.$connect();
         console.log("Connected to the database successfully.");
+
+        await seedTesterAdmin();
+        await seedTesterStaff();
 
         app.listen(PORT, () => {
             console.log(`Server is running on port ${PORT}`);
