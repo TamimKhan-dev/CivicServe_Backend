@@ -9,7 +9,7 @@ import { jwtUtils } from "../utils/jwt";
 declare global {
     namespace Express {
         interface Request {
-            user?: {
+            authUser?: {
                 email: string;
                 name: string;
                 userId: string;

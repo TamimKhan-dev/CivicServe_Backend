@@ -36,6 +36,12 @@ const registerUser = async (payload: UserRegistrationPayload) => {
     return result;
 };
 
+// const credentialLogin = async () => {};
+
+// const googleLogin = async () => {};
+
 export const AuthService = {
     registerUser,
+    // googleLogin,
+    // credentialLogin
 };
