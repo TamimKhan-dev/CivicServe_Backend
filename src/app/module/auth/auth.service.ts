@@ -1,10 +1,13 @@
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import httpStatus from "http-status";
+import type { JwtPayload } from "jsonwebtoken";
 import config from "../../config";
+import { createUserTokens } from "../../helpers/authTokens";
 import { prisma } from "../../lib/prisma";
 import { redisClient } from "../../lib/redis";
 import { AppError } from "../../utils/AppError";
+import { jwtUtils } from "../../utils/jwt";
 import type { UserEmailVerifyPayload, UserRegistrationPayload } from "./auth.interface";
 
 const registerUser = async (payload: UserRegistrationPayload) => {
@@ -78,7 +81,42 @@ const verifyEmail = async (payload: UserEmailVerifyPayload) => {
     await prisma.user.update({ where: { email}, data: { emailVerified: true } });
 };
 
+const refreshToken = async (token: string) => {
+  const verifiedRefreshToken = jwtUtils.verifyToken(
+    token,
+    config.jwt_refresh_secret,
+  );
+
+  if (!verifiedRefreshToken.success || !verifiedRefreshToken.data) {
+    throw new Error(
+      config.node_env === "development"
+        ? verifiedRefreshToken.error
+        : "Invalid refresh token",
+    );
+  }
+
+  const data = verifiedRefreshToken.data as JwtPayload;
+
+  const user = await prisma.user.findUnique({
+    where: { id: data.userId },
+  });
+
+  if (!user || user.deletedAt || user.status === "SUSPENDED") {
+    throw new AppError(httpStatus.BAD_REQUEST, "User is inactive or not found");
+  }
+
+  const userTokens = createUserTokens({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+  });
+
+  return userTokens;
+};
+
 export const AuthService = {
     verifyEmail,
     registerUser,
+    refreshToken,
 };

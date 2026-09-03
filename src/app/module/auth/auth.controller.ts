@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import httpStatus from "http-status";
 import passport from "passport";
 import config from "../../config";
-import { setAuthCookie } from "../../helpers/authCookie";
+import { clearAuthCookie, setAuthCookie } from "../../helpers/authCookie";
 import { createUserTokens } from "../../helpers/authTokens";
 import { AppError } from "../../utils/AppError";
 import { catchAsync } from "../../utils/catchAsync";
@@ -118,9 +118,38 @@ const verifyEmail = catchAsync(
     },
 );
 
+const refreshToken = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  if (!req.cookies.refreshToken) {
+    throw new AppError(httpStatus.NOT_FOUND, "Refresh token is missing");
+  }
+  const result = await AuthService.refreshToken(req.cookies.refreshToken);
+
+  setAuthCookie(res, result);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "New tokens generated successfully",
+    data: result,
+  });
+});
+
+const logout = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  clearAuthCookie(res)
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "You have been logout Successfully!",
+    data: null,
+  });
+});
+
 export const AuthController = {
+  logout,
   verifyEmail,
   registerUser,
+  refreshToken,
   credentialLogin,
   googleLoginCallback,
 };
