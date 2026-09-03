@@ -25,7 +25,13 @@ const UserCredentialLoginZodSchema = z.object({
     .regex(/[0-9]/, "Password must contain atleast 1 Number"),
 });
 
+const UserEmailVerifyZodSchema = z.object({
+	email: z.email("Not email!!"),
+	otp: z.string().length(6),
+});
+
 export const AuthValidation = {
   UserRegistrationZodSchema,
+  UserEmailVerifyZodSchema,
   UserCredentialLoginZodSchema
 };

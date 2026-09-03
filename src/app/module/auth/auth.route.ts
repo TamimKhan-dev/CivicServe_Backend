@@ -15,4 +15,6 @@ router.post("/credential-login", validateRequest(AuthValidation.UserCredentialLo
 router.get("/google", passport.authenticate("google", { scope: ['profile', 'email'] }));
 router.get("/google/callback", AuthController.googleLoginCallback);
 
+router.post("/verify-email", validateRequest(AuthValidation.UserEmailVerifyZodSchema), AuthController.verifyEmail);
+
 export const AuthRoutes = router;

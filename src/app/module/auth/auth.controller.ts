@@ -13,13 +13,13 @@ const registerUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const payload = req.body;
 
-    const result = await AuthService.registerUser(payload);
+    await AuthService.registerUser(payload);
 
     sendResponse(res, {
       success: true,
       statusCode: httpStatus.CREATED,
-      message: "User Registered Successfully!",
-      data: result,
+      message: "OTP sent to your Email(Redis)!",
+      data: null,
     });
   },
 );
@@ -103,7 +103,23 @@ const googleLoginCallback = catchAsync(
   },
 );
 
+const verifyEmail = catchAsync(
+    async (req: Request, res: Response, next: NextFunction) => {
+    const payload = req.body;
+
+    await AuthService.verifyEmail(payload);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.CREATED,
+      message: "User Email Verified Successfully!",
+      data: null,
+    });
+    },
+);
+
 export const AuthController = {
+  verifyEmail,
   registerUser,
   credentialLogin,
   googleLoginCallback,

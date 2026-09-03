@@ -25,4 +25,6 @@ export default {
     google_client_id: process.env.GOOGLE_CLIENT_ID!,
     google_client_secret: process.env.GOOGLE_CLIENT_SECRET!,
     google_client_callback_url: process.env.GOOGLE_CLIENT_CALLBACK_URL!,
+    redis_rest_url: process.env.UPSTASH_REDIS_REST_URL!,
+    redis_rest_token: process.env.UPSTASH_REDIS_REST_TOKEN!,
 }
