@@ -8,6 +8,9 @@ const router = Router();
 
 router.post("/register", validateRequest(AuthValidation.UserRegistrationZodSchema),AuthController.registerUser);
 
+// Credential Login
+router.post("/credential-login", validateRequest(AuthValidation.UserCredentialLoginZodSchema), AuthController.credentialLogin);
+
 //Google Login
 router.get("/google", passport.authenticate("google", { scope: ['profile', 'email'] }));
 router.get("/google/callback", AuthController.googleLoginCallback);

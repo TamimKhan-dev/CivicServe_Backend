@@ -11,12 +11,21 @@ const UserRegistrationZodSchema = z.object({
     .min(5, "Password Must Minimum 5 Characters Long.")
     .regex(/[a-z]/, "Password must contain atleast 1 Lowercase Letter")
     .regex(/[A-Z]/, "Password must contain atleast 1 Uppercase Letter")
-
     .regex(/[0-9]/, "Password must contain atleast 1 Number"),
-    // .regex(/[^A-Za-z0-9]/, "Password must contain atleast 1 Special Character"),
   phone: z.string().optional(),
+});
+
+const UserCredentialLoginZodSchema = z.object({
+  email: z.email("Not email!!"),
+  password: z
+    .string()
+    .min(5, "Password Must Minimum 5 Characters Long.")
+    .regex(/[a-z]/, "Password must contain atleast 1 Lowercase Letter")
+    .regex(/[A-Z]/, "Password must contain atleast 1 Uppercase Letter")
+    .regex(/[0-9]/, "Password must contain atleast 1 Number"),
 });
 
 export const AuthValidation = {
   UserRegistrationZodSchema,
+  UserCredentialLoginZodSchema
 };
