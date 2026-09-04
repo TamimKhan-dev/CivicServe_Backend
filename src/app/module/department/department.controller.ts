@@ -18,6 +18,18 @@ const createDepartment = catchAsync(async (req: Request, res: Response, next: Ne
     });
 });
 
+const getAllDepartments = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const result = await DepartmentService.getAllDepartments();
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Fetched All Departments Successfully!",
+      data: result,
+    });
+});
+
 export const DepartmentController = {
     createDepartment,
+    getAllDepartments,
 };

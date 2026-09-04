@@ -10,6 +10,17 @@ const createDepartment = async (payload: IDepartmentCreationPayload, adminInfo: 
     });
 };
 
+const getAllDepartments = async () => {
+    return await prisma.department.findMany({
+        where: {
+            isActive: true,
+            deletedAt: null,
+        }, 
+        omit: { deletedAt: true }
+    });
+};
+
 export const DepartmentService = {
     createDepartment,
+    getAllDepartments,
 };
