@@ -13,6 +13,7 @@ import "./app/config/passport";
 import { DepartmentRoutes } from './app/module/department/department.route'
 import { StaffApplicationRoutes } from './app/module/staffApplication/staffApplication.route'
 import { CategoryRoutes } from './app/module/category/category.route'
+import { ServiceRoutes } from './app/module/service/service.route'
 
 const app: Application = express()
 
@@ -25,6 +26,7 @@ app.use(passport.initialize());
 app.use(cookieParser());
 
 app.use('/api/v1/auth', AuthRoutes);
+app.use('/api/v1/service', ServiceRoutes);
 app.use('/api/v1/category', CategoryRoutes);
 app.use('/api/v1/department', DepartmentRoutes);
 app.use('/api/v1/staff-application', StaffApplicationRoutes);
