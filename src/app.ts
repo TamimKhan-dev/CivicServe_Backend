@@ -10,6 +10,7 @@ import { globalErrorHandler } from './app/middleware/globalErrorHandler'
 import { notFound } from './app/middleware/notFound'
 import { AuthRoutes } from './app/module/auth/auth.route'
 import "./app/config/passport";
+import { StaffApplicationRoutes } from './app/module/staffApplication/staffApplication.route'
 
 const app: Application = express()
 
@@ -21,7 +22,8 @@ app.use(express.json());
 app.use(passport.initialize());
 app.use(cookieParser());
 
-app.use('/api/v1/auth', AuthRoutes)
+app.use('/api/v1/auth', AuthRoutes);
+app.use('/api/v1/staff-application', StaffApplicationRoutes);
 
 app.get('/', async (req: Request, res: Response) => {
     res.status(httpStatus.OK).json({
