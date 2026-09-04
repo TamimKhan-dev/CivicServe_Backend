@@ -10,6 +10,7 @@ import { globalErrorHandler } from './app/middleware/globalErrorHandler'
 import { notFound } from './app/middleware/notFound'
 import { AuthRoutes } from './app/module/auth/auth.route'
 import "./app/config/passport";
+import { DepartmentRoutes } from './app/module/department/department.route'
 import { StaffApplicationRoutes } from './app/module/staffApplication/staffApplication.route'
 
 const app: Application = express()
@@ -23,6 +24,7 @@ app.use(passport.initialize());
 app.use(cookieParser());
 
 app.use('/api/v1/auth', AuthRoutes);
+app.use('/api/v1/department', DepartmentRoutes)
 app.use('/api/v1/staff-application', StaffApplicationRoutes);
 
 app.get('/', async (req: Request, res: Response) => {
