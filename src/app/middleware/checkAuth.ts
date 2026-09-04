@@ -8,17 +8,19 @@ import { AppError } from "../utils/AppError";
 import { catchAsync } from "../utils/catchAsync";
 import { jwtUtils } from "../utils/jwt";
 
+export interface RequestUser {
+	email: string;
+	name: string;
+	userId: string;
+	role: Role;
+}
+
 declare global {
-  namespace Express {
-    interface Request {
-      authUser?: {
-        email: string;
-        name: string;
-        userId: string;
-        role: Role;
-      };
-    }
-  }
+	namespace Express {
+		interface Request {
+			authUser?: RequestUser;
+		}
+	}
 }
 
 export const auth = (...requiredRoles: Role[]) => {

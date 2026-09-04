@@ -6,9 +6,8 @@ import { DepartmentService } from "./department.service";
 
 const createDepartment = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const payload = req.body;
-    const adminInfo = req.authUser!;
 
-    const result = await DepartmentService.createDepartment(payload, adminInfo);
+    const result = await DepartmentService.createDepartment(payload);
 
     sendResponse(res, {
       success: true,
