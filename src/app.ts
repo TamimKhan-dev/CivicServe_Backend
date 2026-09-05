@@ -16,9 +16,10 @@ import { AuthRoutes } from "./app/module/auth/auth.route";
 import "./app/config/passport";
 import { CategoryRoutes } from "./app/module/category/category.route";
 import { DepartmentRoutes } from "./app/module/department/department.route";
+import { RequestRoutes } from "./app/module/request/request.route";
 import { ServiceRoutes } from "./app/module/service/service.route";
 import { StaffApplicationRoutes } from "./app/module/staffApplication/staffApplication.route";
-import { RequestRoutes } from "./app/module/request/request.route";
+import { UserRoutes } from "./app/module/user/user.route";
 
 const app: Application = express();
 
@@ -38,6 +39,7 @@ app.use(passport.initialize());
 app.use(cookieParser());
 
 app.use("/api/v1/auth", AuthRoutes);
+app.use("/api/v1/user", UserRoutes);
 app.use("/api/v1/request", RequestRoutes);
 app.use("/api/v1/service", ServiceRoutes);
 app.use("/api/v1/category", CategoryRoutes);

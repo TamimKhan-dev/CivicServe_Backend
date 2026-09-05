@@ -9,9 +9,12 @@ model User {
   profileImage  String?
   status        UserStatus @default(ACTIVE)
   emailVerified Boolean    @default(false)
+  departmentId  String?
   deletedAt     DateTime?
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
+
+  department Department? @relation(fields: [departmentId], references: [id])
 
   requests             Request[]          @relation("CitizenRequests")
   assignedRequests     Request[]          @relation("AssignedStaffRequests")

@@ -11,7 +11,8 @@ model Department {
   categories        Category[]
   services          Service[]
   staffApplications StaffApplication[]
+  users             User[]
 
-  @@index([isActive])  
+  @@index([isActive])
   @@map("departments")
 }

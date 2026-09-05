@@ -26,17 +26,15 @@ router.get(
 	"/google",
 	passport.authenticate("google", { scope: ["profile", "email"] }),
 );
+
 router.get("/google/callback", AuthController.googleLoginCallback);
-
 router.post("/logout", AuthController.logout);
-
+router.post("/refresh-token", AuthController.refreshToken);
 router.post(
 	"/verify-email",
 	validateRequest(AuthValidation.UserEmailVerifyZodSchema),
 	AuthController.verifyEmail,
 );
-router.post("/refresh-token", AuthController.refreshToken);
-
 router.get(
 	"/get-me",
 	auth(Role.ADMIN, Role.CITIZEN, Role.STAFF),
