@@ -58,7 +58,12 @@ const RequestQueryZodSchema = z.object({
 	serviceId: z.string().optional(),
 });
 
+const RequestParamsZodSchema = z.object({
+	requestId: z.string().min(1, "You must provide a requestId!"),
+});
+
 export const RequestValidation = {
 	RequestQueryZodSchema,
+	RequestParamsZodSchema,
 	RequestCreationZodSchema,
 };

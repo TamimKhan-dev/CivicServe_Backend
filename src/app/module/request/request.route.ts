@@ -15,5 +15,10 @@ router.post(
 );
 
 router.get("/my-requests", auth(Role.CITIZEN), RequestController.getMyRequests);
+router.get(
+	"/:requestId",
+	auth(Role.CITIZEN),
+	RequestController.getSingleRequest,
+);
 
 export const RequestRoutes = router;

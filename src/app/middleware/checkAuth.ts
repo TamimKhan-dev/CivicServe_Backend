@@ -69,6 +69,13 @@ export const auth = (...requiredRoles: Role[]) => {
 			);
 		}
 
+		if (user.deletedAt) {
+			throw new AppError(
+				httpStatus.NOT_FOUND,
+				"Your account has been Deleted!",
+			);
+		}
+
 		if (user.status === "SUSPENDED") {
 			throw new AppError(
 				httpStatus.BAD_REQUEST,

@@ -31,6 +31,24 @@ const getMyRequests = catchAsync(
 		sendResponse(res, {
 			success: true,
 			statusCode: httpStatus.OK,
+			message: "Requests Fetched Successfully!",
+			data: result,
+		});
+	},
+);
+
+const getSingleRequest = catchAsync(
+	async (req: Request, res: Response, next: NextFunction) => {
+		const userInfo = req.authUser!;
+		const { requestId } = RequestValidation.RequestParamsZodSchema.parse(
+			req.params,
+		);
+
+		const result = await RequestService.getSingleRequest(userInfo, requestId);
+
+		sendResponse(res, {
+			success: true,
+			statusCode: httpStatus.OK,
 			message: "Request Fetched Successfully!",
 			data: result,
 		});
@@ -40,4 +58,5 @@ const getMyRequests = catchAsync(
 export const RequestController = {
 	createRequest,
 	getMyRequests,
+	getSingleRequest,
 };

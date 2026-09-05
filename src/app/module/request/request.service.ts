@@ -255,7 +255,19 @@ const getMyRequests = async (userInfo: RequestUser, query: IRequestQuery) => {
 	};
 };
 
+const getSingleRequest = async (userInfo: RequestUser, requestId: string) => {
+	const { userId } = userInfo;
+
+	return await prisma.request.findUnique({
+		where: {
+			id: requestId,
+			userId,
+		},
+	});
+};
+
 export const RequestService = {
 	createRequest,
 	getMyRequests,
+	getSingleRequest,
 };
