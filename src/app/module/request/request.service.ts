@@ -2,6 +2,7 @@ import httpStatus from "http-status";
 import {
 	type RequestStatus,
 	RequestType,
+	Role,
 } from "../../../generated/prisma/enums";
 import type { RequestWhereInput } from "../../../generated/prisma/models";
 import { prisma } from "../../lib/prisma";
@@ -14,27 +15,6 @@ const createRequest = async (
 	userInfo: RequestUser,
 ) => {
 	const { departmentId, categoryId, serviceId } = payload;
-
-	const user = await prisma.user.findUnique({ where: { id: userInfo.userId } });
-
-	if (!user) {
-		throw new AppError(httpStatus.NOT_FOUND, "User not found!");
-	}
-
-	if (user.deletedAt) {
-		throw new AppError(httpStatus.BAD_REQUEST, "Your account is Deleted!");
-	}
-
-	if (!user.emailVerified) {
-		throw new AppError(
-			httpStatus.BAD_REQUEST,
-			"You must verify your email to send a Request!",
-		);
-	}
-
-	if (user.status === "SUSPENDED") {
-		throw new AppError(httpStatus.BAD_REQUEST, "Your account is Suspended!");
-	}
 
 	const [department, category, service] = await Promise.all([
 		prisma.department.findUnique({ where: { id: departmentId } }),
@@ -133,8 +113,8 @@ const createRequest = async (
 };
 
 const getMyRequests = async (userInfo: RequestUser, query: IRequestQuery) => {
-	const limit = query.limit ? Number(query.limit) : 10;
-	const page = query.page ? Number(query.page) : 1;
+	const limit = query.limit ?? 10;
+	const page = query.page ?? 1;
 	const skip = (page - 1) * limit;
 
 	const sortBy = query.sortBy || "createdAt";
@@ -266,8 +246,134 @@ const getSingleRequest = async (userInfo: RequestUser, requestId: string) => {
 	});
 };
 
+const getAllRequests = async (userInfo: RequestUser, query: IRequestQuery) => {
+	const limit = query.limit ?? 10;
+	const page = query.page ?? 1;
+	const skip = (page - 1) * limit;
+
+	const sortBy = query.sortBy || "createdAt";
+	const sortOrder = query.sortOrder || "desc";
+
+	const andConditions: RequestWhereInput[] = [];
+
+	if (query.searchTerm) {
+		andConditions.push({
+			OR: [
+				{
+					title: {
+						contains: query.searchTerm,
+						mode: "insensitive",
+					},
+				},
+				{
+					description: {
+						contains: query.searchTerm,
+						mode: "insensitive",
+					},
+				},
+				{
+					location: {
+						contains: query.searchTerm,
+						mode: "insensitive",
+					},
+				},
+			],
+		});
+	}
+
+	if (userInfo.role === Role.STAFF) {
+		andConditions.push({
+			assignedStaffId: userInfo.userId,
+		});
+	}
+
+	if (query.status) {
+		andConditions.push({
+			status: query.status as RequestStatus,
+		});
+	}
+
+	if (query.type) {
+		andConditions.push({
+			type: query.type as RequestType,
+		});
+	}
+
+	if (query.departmentId) {
+		andConditions.push({
+			departmentId: query.departmentId,
+		});
+	}
+
+	if (query.categoryId) {
+		andConditions.push({
+			categoryId: query.categoryId,
+		});
+	}
+
+	if (query.serviceId) {
+		andConditions.push({
+			serviceId: query.serviceId,
+		});
+	}
+
+	const requests = await prisma.request.findMany({
+		where: {
+			AND: andConditions,
+		},
+
+		take: limit,
+		skip,
+
+		orderBy: {
+			[sortBy]: sortOrder,
+		},
+
+		include: {
+			department: {
+				select: {
+					id: true,
+					name: true,
+				},
+			},
+
+			category: {
+				select: {
+					id: true,
+					name: true,
+				},
+			},
+
+			service: {
+				select: {
+					id: true,
+					name: true,
+					fee: true,
+				},
+			},
+		},
+	});
+
+	const totalRequestCount = await prisma.request.count({
+		where: {
+			AND: andConditions,
+		},
+	});
+
+	return {
+		requests: requests,
+		meta: {
+			page,
+			limit,
+			total: totalRequestCount,
+			totalPages: Math.ceil(totalRequestCount / limit),
+		},
+	};
+};
+
 export const RequestService = {
 	createRequest,
 	getMyRequests,
+	getAllRequests,
 	getSingleRequest,
 };

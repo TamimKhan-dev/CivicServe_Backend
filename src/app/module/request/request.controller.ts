@@ -55,8 +55,25 @@ const getSingleRequest = catchAsync(
 	},
 );
 
+const getAllRequests = catchAsync(
+	async (req: Request, res: Response, next: NextFunction) => {
+		const userInfo = req.authUser!;
+		const query = RequestValidation.RequestQueryZodSchema.parse(req.query);
+
+		const result = await RequestService.getAllRequests(userInfo, query);
+
+		sendResponse(res, {
+			success: true,
+			statusCode: httpStatus.OK,
+			message: "Requests Fetched Successfully!",
+			data: result,
+		});
+	},
+);
+
 export const RequestController = {
 	createRequest,
 	getMyRequests,
+	getAllRequests,
 	getSingleRequest,
 };

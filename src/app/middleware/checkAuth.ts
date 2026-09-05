@@ -83,6 +83,10 @@ export const auth = (...requiredRoles: Role[]) => {
 			);
 		}
 
+		if (!user.emailVerified) {
+			throw new AppError(httpStatus.BAD_REQUEST, "Your Email is not Verified!");
+		}
+
 		req.authUser = {
 			email,
 			name,
