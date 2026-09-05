@@ -14,4 +14,6 @@ router.post(
 	RequestController.createRequest,
 );
 
+router.get("/my-requests", auth(Role.CITIZEN), RequestController.getMyRequests);
+
 export const RequestRoutes = router;

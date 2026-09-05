@@ -3,6 +3,7 @@ import httpStatus from "http-status";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { RequestService } from "./request.service";
+import { RequestValidation } from "./request.validation";
 
 const createRequest = catchAsync(
 	async (req: Request, res: Response, next: NextFunction) => {
@@ -20,6 +21,23 @@ const createRequest = catchAsync(
 	},
 );
 
+const getMyRequests = catchAsync(
+	async (req: Request, res: Response, next: NextFunction) => {
+		const citizenInfo = req.authUser!;
+		const query = RequestValidation.RequestQueryZodSchema.parse(req.query);
+
+		const result = await RequestService.getMyRequests(citizenInfo, query);
+
+		sendResponse(res, {
+			success: true,
+			statusCode: httpStatus.OK,
+			message: "Request Fetched Successfully!",
+			data: result,
+		});
+	},
+);
+
 export const RequestController = {
 	createRequest,
+	getMyRequests,
 };
