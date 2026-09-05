@@ -11,164 +11,183 @@ import type { IRequestUser } from "./auth.interface";
 import { AuthService } from "./auth.service";
 
 const registerUser = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const payload = req.body;
+	async (req: Request, res: Response, next: NextFunction) => {
+		const payload = req.body;
 
-    await AuthService.registerUser(payload);
+		await AuthService.registerUser(payload);
 
-    sendResponse(res, {
-      success: true,
-      statusCode: httpStatus.CREATED,
-      message: "OTP sent to your Email(Redis)!",
-      data: null,
-    });
-  },
+		sendResponse(res, {
+			success: true,
+			statusCode: httpStatus.CREATED,
+			message: "OTP sent to your Email(Redis)!",
+			data: null,
+		});
+	},
 );
 
 const credentialLogin = catchAsync(
-  (req: Request, res: Response, next: NextFunction) => {
-    passport.authenticate("local", async (err: any, user: any, info: any) => {
-      try {
-        if (err) {
-          return next(new AppError(httpStatus.INTERNAL_SERVER_ERROR, err?.message || "Something went wrong!"));
-        }
+	(req: Request, res: Response, next: NextFunction) => {
+		passport.authenticate("local", async (err: any, user: any, info: any) => {
+			try {
+				if (err) {
+					return next(
+						new AppError(
+							httpStatus.INTERNAL_SERVER_ERROR,
+							err?.message || "Something went wrong!",
+						),
+					);
+				}
 
-        if (!user) {
-          return next(new AppError(httpStatus.NOT_FOUND, info?.message || "Invalid Credential!"));
-        }
+				if (!user) {
+					return next(
+						new AppError(
+							httpStatus.NOT_FOUND,
+							info?.message || "Invalid Credential!",
+						),
+					);
+				}
 
-        const userTokens = createUserTokens({
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        });
+				const userTokens = createUserTokens({
+					id: user.id,
+					name: user.name,
+					email: user.email,
+					role: user.role,
+				});
 
-        setAuthCookie(res, userTokens);
+				setAuthCookie(res, userTokens);
 
-        const { password, ...restUserInfo } = user;
+				const { password, ...restUserInfo } = user;
 
-        sendResponse(res, {
-          statusCode: httpStatus.OK,
-          success: true,
-          message: "login successful",
-          data: {
-            accessToken: userTokens.accessToken,
-            refreshToken: userTokens.refreshToken,
-            restUserInfo,
-          },
-        });
-      } catch (error) {
-        next(error);
-      }
-    })(req, res, next);
-  },
+				sendResponse(res, {
+					statusCode: httpStatus.OK,
+					success: true,
+					message: "login successful",
+					data: {
+						accessToken: userTokens.accessToken,
+						refreshToken: userTokens.refreshToken,
+						restUserInfo,
+					},
+				});
+			} catch (error) {
+				next(error);
+			}
+		})(req, res, next);
+	},
 );
 
 const googleLoginCallback = catchAsync(
-  (req: Request, res: Response, next: NextFunction) => {
-    passport.authenticate("google", (err: any, user: any, info: any) => {
-      try {
-        if (err) {
-          return next(
-            new AppError(
-              httpStatus.INTERNAL_SERVER_ERROR,
-              err?.message || "Google Authentication failed",
-            ),
-          );
-        }
+	(req: Request, res: Response, next: NextFunction) => {
+		passport.authenticate("google", (err: any, user: any, info: any) => {
+			try {
+				if (err) {
+					return next(
+						new AppError(
+							httpStatus.INTERNAL_SERVER_ERROR,
+							err?.message || "Google Authentication failed",
+						),
+					);
+				}
 
-        if (!user) {
-          return next(
-            new AppError(
-              httpStatus.INTERNAL_SERVER_ERROR,
-              info?.message || "Google Authentication failed",
-            ),
-          );
-        }
+				if (!user) {
+					return next(
+						new AppError(
+							httpStatus.INTERNAL_SERVER_ERROR,
+							info?.message || "Google Authentication failed",
+						),
+					);
+				}
 
-        const userTokens = createUserTokens({
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        });
+				const userTokens = createUserTokens({
+					id: user.id,
+					name: user.name,
+					email: user.email,
+					role: user.role,
+				});
 
-        setAuthCookie(res, userTokens);
+				setAuthCookie(res, userTokens);
 
-        res.redirect(`${config.frontend_url}/login?success=true`);
-      } catch (error) {
-        next(error);
-      }
-    })(req, res, next);
-  },
+				res.redirect(`${config.frontend_url}/login?success=true`);
+			} catch (error) {
+				next(error);
+			}
+		})(req, res, next);
+	},
 );
 
 const verifyEmail = catchAsync(
-    async (req: Request, res: Response, next: NextFunction) => {
-    const payload = req.body;
+	async (req: Request, res: Response, next: NextFunction) => {
+		const payload = req.body;
 
-    await AuthService.verifyEmail(payload);
+		await AuthService.verifyEmail(payload);
 
-    sendResponse(res, {
-      success: true,
-      statusCode: httpStatus.CREATED,
-      message: "User Email Verified Successfully!",
-      data: null,
-    });
-    },
+		sendResponse(res, {
+			success: true,
+			statusCode: httpStatus.CREATED,
+			message: "User Email Verified Successfully!",
+			data: null,
+		});
+	},
 );
 
-const refreshToken = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  if (!req.cookies.refreshToken) {
-    throw new AppError(httpStatus.NOT_FOUND, "Refresh token is missing");
-  }
-  const result = await AuthService.refreshToken(req.cookies.refreshToken);
+const refreshToken = catchAsync(
+	async (req: Request, res: Response, next: NextFunction) => {
+		if (!req.cookies.refreshToken) {
+			throw new AppError(httpStatus.NOT_FOUND, "Refresh token is missing");
+		}
+		const result = await AuthService.refreshToken(req.cookies.refreshToken);
 
-  setAuthCookie(res, result);
+		setAuthCookie(res, result);
 
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "New tokens generated successfully",
-    data: result,
-  });
-});
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "New tokens generated successfully",
+			data: result,
+		});
+	},
+);
 
-const logout = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  clearAuthCookie(res)
+const logout = catchAsync(
+	async (req: Request, res: Response, next: NextFunction) => {
+		clearAuthCookie(res);
 
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "You have been logout Successfully!",
-    data: null,
-  });
-});
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "You have been logout Successfully!",
+			data: null,
+		});
+	},
+);
 
-const getMe = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const user = req.authUser as IRequestUser;
+const getMe = catchAsync(
+	async (req: Request, res: Response, next: NextFunction) => {
+		const user = req.authUser as IRequestUser;
 
-  if (!user) {
-    throw new AppError(httpStatus.NOT_FOUND, "User information is missing in the request");
-  }
+		if (!user) {
+			throw new AppError(
+				httpStatus.NOT_FOUND,
+				"User information is missing in the request",
+			);
+		}
 
-  const result = await AuthService.getMe(user.userId);
+		const result = await AuthService.getMe(user.userId);
 
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "User profile fetched successfully",
-    data: result,
-  });
-});
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "User profile fetched successfully",
+			data: result,
+		});
+	},
+);
 
 export const AuthController = {
-  getMe,
-  logout,
-  verifyEmail,
-  registerUser,
-  refreshToken,
-  credentialLogin,
-  googleLoginCallback,
+	getMe,
+	logout,
+	verifyEmail,
+	registerUser,
+	refreshToken,
+	credentialLogin,
+	googleLoginCallback,
 };

@@ -8,10 +8,10 @@ import { CategoryValidation } from "./category.validation";
 const router = Router();
 
 router.post(
-  "/create-category",
-  auth(Role.ADMIN),
-  validateRequest(CategoryValidation.CategoryCreationZodSchema),
-  CategoryController.createCategory,
+	"/create-category",
+	auth(Role.ADMIN),
+	validateRequest(CategoryValidation.CategoryCreationZodSchema),
+	CategoryController.createCategory,
 );
 
 router.get("/all-categories", CategoryController.getAllCategories);

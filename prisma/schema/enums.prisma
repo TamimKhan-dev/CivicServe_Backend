@@ -10,7 +10,7 @@ enum UserStatus {
 }
 
 enum RequestType {
-  COMPLAINT
+  COMPLAINT_REQUEST
   SERVICE_REQUEST
 }
 

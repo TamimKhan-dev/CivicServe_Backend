@@ -1,5 +1,4 @@
-
 export interface IStaffApplicationPayload {
-    reason: string;
-    departmentId: string;
+	reason: string;
+	departmentId: string;
 }

@@ -8,10 +8,10 @@ import { DepartmentValidation } from "./department.validation";
 const router = Router();
 
 router.post(
-  "/create-department",
-  auth(Role.ADMIN),
-  validateRequest(DepartmentValidation.DepartmentCreationZodSchema),
-  DepartmentController.createDepartment,
+	"/create-department",
+	auth(Role.ADMIN),
+	validateRequest(DepartmentValidation.DepartmentCreationZodSchema),
+	DepartmentController.createDepartment,
 );
 
 router.get("/all-departments", DepartmentController.getAllDepartments);

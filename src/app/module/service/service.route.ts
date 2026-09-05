@@ -8,12 +8,12 @@ import { ServiceValidation } from "./service.validation";
 const router = Router();
 
 router.post(
-  "/create-service",
-  auth(Role.ADMIN),
-  validateRequest(ServiceValidation.ServiceCreationZodSchema),
-  ServiceController.createService,
+	"/create-service",
+	auth(Role.ADMIN),
+	validateRequest(ServiceValidation.ServiceCreationZodSchema),
+	ServiceController.createService,
 );
 
-router.get("/all-services", ServiceController.getAllServices)
+router.get("/all-services", ServiceController.getAllServices);
 
 export const ServiceRoutes = router;

@@ -1,5 +1,4 @@
-
 export interface IDepartmentCreationPayload {
-  name: string;
-  description: string;
+	name: string;
+	description: string;
 }

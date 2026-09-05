@@ -2,7 +2,7 @@ model Request {
   id              String        @id @default(uuid())
   title           String        @db.VarChar(255)
   description     String        @db.Text
-  type            RequestType   @default(COMPLAINT)
+  type            RequestType   @default(COMPLAINT_REQUEST)
   status          RequestStatus @default(SUBMITTED)
   location        String        @db.VarChar(200)
   imageUrl        String?

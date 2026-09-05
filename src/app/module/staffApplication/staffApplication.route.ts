@@ -8,10 +8,10 @@ import { StaffApplicationValidation } from "./staffApplication.validation";
 const router = Router();
 
 router.post(
-  "/",
-  auth(Role.CITIZEN),
-  validateRequest(StaffApplicationValidation.StaffApplicationZodSchema),
-  StaffApplicationController.staffApplication,
+	"/",
+	auth(Role.CITIZEN),
+	validateRequest(StaffApplicationValidation.StaffApplicationZodSchema),
+	StaffApplicationController.staffApplication,
 );
 
 export const StaffApplicationRoutes = router;
