@@ -4,18 +4,19 @@ import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { UserService } from "./user.service";
 
-const getAllStaffs = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+const getAllStaffs = catchAsync(
+	async (req: Request, res: Response, next: NextFunction) => {
+		const result = await UserService.getAllStaffs();
 
-    const result = await UserService.getAllStaffs();
-
-    sendResponse(res, {
-		success: true,
-		statusCode: httpStatus.OK,
-		message: "Staffs Details Fetched Successfully!",
-		data: result,
-	});
-});
+		sendResponse(res, {
+			success: true,
+			statusCode: httpStatus.OK,
+			message: "Staffs Details Fetched Successfully!",
+			data: result,
+		});
+	},
+);
 
 export const UserController = {
-    getAllStaffs,
+	getAllStaffs,
 };

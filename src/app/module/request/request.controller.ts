@@ -71,7 +71,31 @@ const getAllRequests = catchAsync(
 	},
 );
 
+const assignStaff = catchAsync(
+	async (req: Request, res: Response, next: NextFunction) => {
+		const adminInfo = req.authUser!;
+		const { staffId } = req.body;
+		const { requestId } = RequestValidation.RequestParamsZodSchema.parse(
+			req.params,
+		);
+
+		const result = await RequestService.assignStaff(
+			requestId,
+			staffId,
+			adminInfo,
+		);
+
+		sendResponse(res, {
+			success: true,
+			statusCode: httpStatus.OK,
+			message: "Assigned Staff Successfully!",
+			data: result,
+		});
+	},
+);
+
 export const RequestController = {
+	assignStaff,
 	createRequest,
 	getMyRequests,
 	getAllRequests,

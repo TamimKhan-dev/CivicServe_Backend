@@ -8,22 +8,30 @@ import { RequestValidation } from "./request.validation";
 const router = Router();
 
 router.post(
-  "/create-request",
-  auth(Role.CITIZEN),
-  validateRequest(RequestValidation.RequestCreationZodSchema),
-  RequestController.createRequest,
+	"/create-request",
+	auth(Role.CITIZEN),
+	validateRequest(RequestValidation.RequestCreationZodSchema),
+	RequestController.createRequest,
+);
+
+router.patch(
+	"/:requestId/assign",
+	auth(Role.ADMIN),
+	validateRequest(RequestValidation.AssignStaffZodSchema),
+	RequestController.assignStaff,
 );
 
 router.get("/my-requests", auth(Role.CITIZEN), RequestController.getMyRequests);
+
 router.get(
-  "/all-requests",
-  auth(Role.ADMIN, Role.STAFF),
-  RequestController.getAllRequests,
+	"/all-requests",
+	auth(Role.ADMIN, Role.STAFF),
+	RequestController.getAllRequests,
 );
 router.get(
-  "/:requestId",
-  auth(Role.CITIZEN),
-  RequestController.getSingleRequest,
+	"/:requestId",
+	auth(Role.CITIZEN),
+	RequestController.getSingleRequest,
 );
 
 export const RequestRoutes = router;

@@ -62,7 +62,12 @@ const RequestParamsZodSchema = z.object({
 	requestId: z.string().min(1, "You must provide a requestId!"),
 });
 
+const AssignStaffZodSchema = z.object({
+	staffId: z.string().min(1, "Staff ID is required!"),
+});
+
 export const RequestValidation = {
+	AssignStaffZodSchema,
 	RequestQueryZodSchema,
 	RequestParamsZodSchema,
 	RequestCreationZodSchema,

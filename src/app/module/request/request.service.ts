@@ -1,8 +1,10 @@
 import httpStatus from "http-status";
 import {
-	type RequestStatus,
+	PaymentStatus,
+	RequestStatus,
 	RequestType,
 	Role,
+	UserStatus,
 } from "../../../generated/prisma/enums";
 import type { RequestWhereInput } from "../../../generated/prisma/models";
 import { prisma } from "../../lib/prisma";
@@ -99,17 +101,33 @@ const createRequest = async (
 		}
 	}
 
-	return await prisma.request.create({
-		data: {
-			userId: userInfo.userId,
-			categoryId,
-			departmentId,
-			description: payload.description,
-			location: payload.location,
-			title: payload.title,
-			type: payload.type,
-		},
+	const result = await prisma.$transaction(async (tx) => {
+		const request = await tx.request.create({
+			data: {
+				userId: userInfo.userId,
+				categoryId,
+				departmentId,
+				description: payload.description,
+				location: payload.location,
+				title: payload.title,
+				type: payload.type,
+			},
+		});
+
+		if (service && request.type === RequestType.SERVICE_REQUEST) {
+			await tx.payment.create({
+				data: {
+					amount: service.fee,
+					userId: request.userId,
+					requestId: request.id,
+				},
+			});
+		}
+
+		return request;
 	});
+
+	return result;
 };
 
 const getMyRequests = async (userInfo: RequestUser, query: IRequestQuery) => {
@@ -371,7 +389,77 @@ const getAllRequests = async (userInfo: RequestUser, query: IRequestQuery) => {
 	};
 };
 
+const assignStaff = async (
+	requestId: string,
+	staffId: string,
+	adminInfo: RequestUser,
+) => {
+	const [request, staff] = await Promise.all([
+		prisma.request.findUnique({
+			where: { id: requestId },
+		}),
+		prisma.user.findUnique({
+			where: {
+				id: staffId,
+				role: Role.STAFF,
+				deletedAt: null,
+				status: UserStatus.ACTIVE,
+				emailVerified: true,
+			},
+		}),
+	]);
+
+	if (!request) {
+		throw new AppError(httpStatus.NOT_FOUND, "No Request Found with this Id!");
+	}
+
+	if (!staff) {
+		throw new AppError(
+			httpStatus.NOT_FOUND,
+			"No Active Staff Found With This Id!",
+		);
+	}
+
+	if (staff.departmentId !== request.departmentId) {
+		throw new AppError(
+			httpStatus.BAD_REQUEST,
+			"This staff doesn't belong to the request's department!",
+		);
+	}
+
+	if (request.assignedStaffId) {
+		throw new AppError(
+			httpStatus.BAD_REQUEST,
+			"This request is already assigned to a staff!",
+		);
+	}
+
+	if (request.type === RequestType.SERVICE_REQUEST) {
+		const payment = await prisma.payment.findUnique({
+			where: { requestId },
+		});
+
+		if (!payment || payment.status !== PaymentStatus.PAID) {
+			throw new AppError(
+				httpStatus.BAD_REQUEST,
+				"Service request must be paid before assigning a staff!",
+			);
+		}
+	}
+
+	return prisma.request.update({
+		where: {
+			id: requestId,
+		},
+		data: {
+			assignedStaffId: staff.id,
+			status: RequestStatus.ASSIGNED,
+		},
+	});
+};
+
 export const RequestService = {
+	assignStaff,
 	createRequest,
 	getMyRequests,
 	getAllRequests,
