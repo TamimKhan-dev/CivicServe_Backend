@@ -16,7 +16,6 @@ enum RequestType {
 
 enum RequestStatus {
   SUBMITTED
-  UNDER_REVIEW
   ASSIGNED
   IN_PROGRESS
   RESOLVED

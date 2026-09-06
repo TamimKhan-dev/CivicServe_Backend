@@ -66,9 +66,17 @@ const AssignStaffZodSchema = z.object({
 	staffId: z.string().min(1, "Staff ID is required!"),
 });
 
+const UpdateRequestStatusZodSchema = z.object({
+	status: z.enum(["IN_PROGRESS", "RESOLVED"], {
+		error:
+			"Please provide a valid request status! Hint: [IN_PROGRESS, RESOLVED]",
+	}),
+});
+
 export const RequestValidation = {
 	AssignStaffZodSchema,
 	RequestQueryZodSchema,
 	RequestParamsZodSchema,
 	RequestCreationZodSchema,
+	UpdateRequestStatusZodSchema,
 };

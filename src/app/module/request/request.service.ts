@@ -10,7 +10,11 @@ import type { RequestWhereInput } from "../../../generated/prisma/models";
 import { prisma } from "../../lib/prisma";
 import type { RequestUser } from "../../middleware/checkAuth";
 import { AppError } from "../../utils/AppError";
-import type { ICreateRequestPayload, IRequestQuery } from "./request.interface";
+import type {
+	ICreateRequestPayload,
+	IRequestQuery,
+	IUpdateRequestStatus,
+} from "./request.interface";
 
 const createRequest = async (
 	payload: ICreateRequestPayload,
@@ -458,10 +462,74 @@ const assignStaff = async (
 	});
 };
 
+const staffUpdateRequestStatus = async (
+	staffInfo: RequestUser,
+	payload: IUpdateRequestStatus,
+	requestId: string,
+) => {
+	const { userId: staffId } = staffInfo;
+
+	const request = await prisma.request.findUnique({
+		where: { id: requestId },
+	});
+
+	if (!request) {
+		throw new AppError(httpStatus.NOT_FOUND, "Request doesn't Exist!");
+	}
+
+	if (request.assignedStaffId !== staffId) {
+		throw new AppError(
+			httpStatus.FORBIDDEN,
+			"You are not assigned to this request!",
+		);
+	}
+
+	if (
+		request.status === RequestStatus.RESOLVED ||
+		request.status === RequestStatus.REJECTED
+	) {
+		throw new AppError(
+			httpStatus.BAD_REQUEST,
+			`Request is already ${request.status}`,
+		);
+	}
+
+	if (
+		request.status === RequestStatus.ASSIGNED &&
+		payload.status !== RequestStatus.IN_PROGRESS
+	) {
+		throw new AppError(
+			httpStatus.BAD_REQUEST,
+			"An assigned request can only be moved to IN_PROGRESS!",
+		);
+	}
+
+	if (
+		request.status === RequestStatus.IN_PROGRESS &&
+		payload.status !== RequestStatus.RESOLVED
+	) {
+		throw new AppError(
+			httpStatus.BAD_REQUEST,
+			"An in-progress request can only be moved to RESOLVED!",
+		);
+	}
+
+	return await prisma.request.update({
+		where: {
+			id: requestId,
+		},
+		data: {
+			status: payload.status,
+		},
+		omit: { deletedAt: true },
+	});
+};
+
 export const RequestService = {
 	assignStaff,
 	createRequest,
 	getMyRequests,
 	getAllRequests,
 	getSingleRequest,
+	staffUpdateRequestStatus,
 };

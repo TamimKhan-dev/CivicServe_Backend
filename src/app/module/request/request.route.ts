@@ -21,6 +21,13 @@ router.patch(
 	RequestController.assignStaff,
 );
 
+router.patch(
+	"/:requestId/status",
+	auth(Role.STAFF),
+	validateRequest(RequestValidation.UpdateRequestStatusZodSchema),
+	RequestController.staffUpdateRequestStatus,
+);
+
 router.get("/my-requests", auth(Role.CITIZEN), RequestController.getMyRequests);
 
 router.get(

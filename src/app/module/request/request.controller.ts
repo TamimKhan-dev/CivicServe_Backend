@@ -94,10 +94,32 @@ const assignStaff = catchAsync(
 	},
 );
 
+const staffUpdateRequestStatus = catchAsync(
+	async (req: Request, res: Response, next: NextFunction) => {
+		const staffInfo = req.authUser!;
+		const payload = req.body;
+		const param = RequestValidation.RequestParamsZodSchema.parse(req.params);
+
+		const result = await RequestService.staffUpdateRequestStatus(
+			staffInfo,
+			payload,
+			param.requestId,
+		);
+
+		sendResponse(res, {
+			success: true,
+			statusCode: httpStatus.OK,
+			message: "Request updated Successfully!",
+			data: result,
+		});
+	},
+);
+
 export const RequestController = {
 	assignStaff,
 	createRequest,
 	getMyRequests,
 	getAllRequests,
 	getSingleRequest,
+	staffUpdateRequestStatus,
 };

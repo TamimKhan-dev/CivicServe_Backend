@@ -25,3 +25,7 @@ export interface IRequestQuery {
 	categoryId?: string;
 	serviceId?: string;
 }
+
+export interface IUpdateRequestStatus {
+	status: RequestStatus;
+}
