@@ -14,4 +14,11 @@ router.post(
 	StaffApplicationController.staffApplication,
 );
 
+router.patch(
+	"/:applicationId/status",
+	auth(Role.ADMIN),
+	validateRequest(StaffApplicationValidation.StaffApplicationStatusZodSchema),
+	StaffApplicationController.reviewStaffApplication,
+);
+
 export const StaffApplicationRoutes = router;
