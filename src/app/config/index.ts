@@ -25,4 +25,5 @@ export default {
 	google_client_callback_url: process.env.GOOGLE_CLIENT_CALLBACK_URL!,
 	redis_rest_url: process.env.UPSTASH_REDIS_REST_URL!,
 	redis_rest_token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+	stripe_secret_key: process.env.STRIPE_SECRET_KEY!,
 };
