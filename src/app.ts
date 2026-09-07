@@ -24,6 +24,7 @@ import { UserRoutes } from "./app/module/user/user.route";
 
 const app: Application = express();
 
+app.use("/api/v1/payments/webhook", express.raw({ type: "application/json" }));
 app.use(cors({ origin: config.frontend_url, credentials: true }));
 app.use(helmet());
 app.use(

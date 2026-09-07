@@ -5,6 +5,7 @@ import { prisma } from "../../lib/prisma";
 import { stripe } from "../../lib/stripe";
 import type { RequestUser } from "../../middleware/checkAuth";
 import { AppError } from "../../utils/AppError";
+import { handleCheckoutCompleted } from "./payment.utils";
 
 const createCeckoutSession = async (
 	citizenInfo: RequestUser,
@@ -83,6 +84,25 @@ const createCeckoutSession = async (
 	};
 };
 
+const handleWebhook = async (payload: Buffer, signature: string) => {
+	const endpointSecret = config.stripe_webhook_secret;
+	const event = stripe.webhooks.constructEvent(
+		payload,
+		signature,
+		endpointSecret as string,
+	);
+
+	switch (event.type) {
+		case "checkout.session.completed":
+			await handleCheckoutCompleted(event.data.object);
+			break;
+		default:
+			console.log(`No events matched. Unhandled event type ${event.type}.`);
+			break;
+	}
+};
+
 export const PaymentService = {
 	createCeckoutSession,
+	handleWebhook,
 };

@@ -26,4 +26,5 @@ export default {
 	redis_rest_url: process.env.UPSTASH_REDIS_REST_URL!,
 	redis_rest_token: process.env.UPSTASH_REDIS_REST_TOKEN!,
 	stripe_secret_key: process.env.STRIPE_SECRET_KEY!,
+	stripe_webhook_secret: process.env.STRIPE_WEBHOOK_SECRET!,
 };
