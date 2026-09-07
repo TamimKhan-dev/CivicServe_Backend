@@ -263,6 +263,14 @@ const getMyRequests = async (userInfo: RequestUser, query: IRequestQuery) => {
 const getSingleRequest = async (userInfo: RequestUser, requestId: string) => {
 	const { userId } = userInfo;
 
+	const request = await prisma.request.findUnique({
+		where: { id: requestId }
+	});
+
+	if (!request) {
+		throw new AppError(httpStatus.NOT_FOUND, "Request with this Id doesn't Exist!");
+	};
+
 	return await prisma.request.findUnique({
 		where: {
 			id: requestId,
