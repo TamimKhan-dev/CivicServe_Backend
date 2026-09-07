@@ -13,7 +13,11 @@ router.post(
 	validateRequest(CategoryValidation.CategoryCreationZodSchema),
 	CategoryController.createCategory,
 );
-
 router.get("/all-categories", CategoryController.getAllCategories);
+router.delete(
+	"/:categoryId",
+	auth(Role.ADMIN),
+	CategoryController.softDeleteCategory,
+);
 
 export const CategoryRoutes = router;

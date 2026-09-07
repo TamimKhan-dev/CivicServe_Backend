@@ -3,6 +3,7 @@ import httpStatus from "http-status";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { CategoryService } from "./category.service";
+import { CategoryValidation } from "./category.validation";
 
 const createCategory = catchAsync(
 	async (req: Request, res: Response, next: NextFunction) => {
@@ -32,7 +33,27 @@ const getAllCategories = catchAsync(
 	},
 );
 
+const softDeleteCategory = catchAsync(
+	async (req: Request, res: Response, next: NextFunction) => {
+		const adminInfo = req.authUser!;
+		const params = CategoryValidation.CategoryParamsZodSchema.parse(req.params);
+
+		const result = await CategoryService.softDeleteCategory(
+			adminInfo,
+			params.categoryId,
+		);
+
+		sendResponse(res, {
+			success: true,
+			statusCode: httpStatus.OK,
+			message: "Category Deleted Successfully!",
+			data: result,
+		});
+	},
+);
+
 export const CategoryController = {
 	createCategory,
 	getAllCategories,
+	softDeleteCategory,
 };

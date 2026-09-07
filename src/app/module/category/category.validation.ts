@@ -13,6 +13,11 @@ const CategoryCreationZodSchema = z.object({
 	departmentId: z.string("Not a String"),
 });
 
+const CategoryParamsZodSchema = z.object({
+	categoryId: z.string().min(1, "You must provide a categoryId!"),
+});
+
 export const CategoryValidation = {
 	CategoryCreationZodSchema,
+	CategoryParamsZodSchema,
 };

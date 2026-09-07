@@ -1,5 +1,6 @@
 import httpStatus from "http-status";
 import { prisma } from "../../lib/prisma";
+import type { RequestUser } from "../../middleware/checkAuth";
 import { AppError } from "../../utils/AppError";
 import type { ICreateCategoryPayload } from "./category.interface";
 
@@ -44,7 +45,55 @@ const getAllCategories = async () => {
 	});
 };
 
+const softDeleteCategory = async (
+	adminInfo: RequestUser,
+	categoryId: string,
+) => {
+	const category = await prisma.category.findUnique({
+		where: { id: categoryId },
+	});
+
+	if (!category) {
+		throw new AppError(httpStatus.NOT_FOUND, "Category doesn't exist!");
+	}
+
+	if (category.deletedAt) {
+		throw new AppError(httpStatus.BAD_REQUEST, "Category is already deleted!");
+	}
+
+	const result = await prisma.$transaction(async (tx) => {
+		const deletedCategory = await tx.category.update({
+			where: { id: categoryId },
+			data: {
+				deletedAt: new Date(),
+			},
+		});
+
+		const auditLog = await tx.auditLog.create({
+			data: {
+				action: "DELETE_CATEGORY",
+				entity: "Category",
+				entityId: category.id,
+				userId: adminInfo.userId,
+				details: {
+					categoryName: category.name,
+					departmentId: category.departmentId,
+					deletedBy: adminInfo.userId,
+				},
+			},
+		});
+
+		return {
+			category: deletedCategory,
+			auditLog,
+		};
+	});
+
+	return result;
+};
+
 export const CategoryService = {
 	createCategory,
 	getAllCategories,
+	softDeleteCategory,
 };
