@@ -4,6 +4,7 @@ import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { RequestService } from "./request.service";
 import { RequestValidation } from "./request.validation";
+import { AppError } from "../../utils/AppError";
 
 const createRequest = catchAsync(
 	async (req: Request, res: Response, next: NextFunction) => {
@@ -115,11 +116,33 @@ const staffUpdateRequestStatus = catchAsync(
 	},
 );
 
+const uploadRequestImage = catchAsync(
+	async (req: Request, res: Response, next: NextFunction) => {
+		if (!req.file) {
+			throw new AppError(httpStatus.BAD_REQUEST, "No File Provided.");
+		}
+
+		const params = RequestValidation.RequestParamsZodSchema.parse(req.params);
+
+		const result = await RequestService.uploadRequestImage(
+			req.file?.buffer,
+			params.requestId,
+		);
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Request Image uploaded successfully",
+			data: result,
+		});
+	},
+);
+
 export const RequestController = {
 	assignStaff,
 	createRequest,
 	getMyRequests,
 	getAllRequests,
 	getSingleRequest,
+	uploadRequestImage,
 	staffUpdateRequestStatus,
 };

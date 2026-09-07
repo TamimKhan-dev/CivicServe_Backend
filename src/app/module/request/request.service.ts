@@ -1,3 +1,4 @@
+import type { UploadApiResponse } from "cloudinary";
 import httpStatus from "http-status";
 import {
 	PaymentStatus,
@@ -7,6 +8,7 @@ import {
 	UserStatus,
 } from "../../../generated/prisma/enums";
 import type { RequestWhereInput } from "../../../generated/prisma/models";
+import { cloudinary } from "../../lib/cloudinary";
 import { prisma } from "../../lib/prisma";
 import type { RequestUser } from "../../middleware/checkAuth";
 import { AppError } from "../../utils/AppError";
@@ -526,11 +528,64 @@ const staffUpdateRequestStatus = async (
 	});
 };
 
+const uploadRequestImage = async (buffer: Buffer, requestId: string) => {
+	const request = await prisma.request.findUnique({
+		where: {
+			id: requestId,
+		},
+		select: {
+			imagePublicId: true,
+			imageUrl: true,
+		},
+	});
+
+	const cloudinaryResult = await new Promise<UploadApiResponse>(
+		(resolve, reject) => {
+			cloudinary.uploader
+				.upload_stream(
+					{
+						resource_type: "auto",
+					},
+
+					async (error, result) => {
+						if (error) {
+							return reject(error);
+						}
+
+						if (!result) {
+							return reject(new Error("No result returned from Cloudinary"));
+						}
+
+						resolve(result);
+					},
+				)
+				.end(buffer);
+		},
+	);
+
+	const updatedRequest = await prisma.request.update({
+		where: {
+			id: requestId,
+		},
+		data: {
+			imageUrl: cloudinaryResult.secure_url,
+			imagePublicId: cloudinaryResult.public_id,
+		}
+	});
+
+	if (request?.imagePublicId && request.imageUrl) {
+		await cloudinary.uploader.destroy(request.imagePublicId);
+	}
+
+	return updatedRequest;
+};
+
 export const RequestService = {
 	assignStaff,
 	createRequest,
 	getMyRequests,
 	getAllRequests,
 	getSingleRequest,
+	uploadRequestImage,
 	staffUpdateRequestStatus,
 };

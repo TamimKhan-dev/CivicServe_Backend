@@ -48,6 +48,10 @@ const registerUser = async (payload: UserRegistrationPayload) => {
 	const key = `verify-email-otp:${email}`;
 
 	await redisClient.set(key, otp, { ex: expirationValue });
+
+	const redisOtp = await redisClient.get(key);
+
+	return { otp: redisOtp };
 };
 
 const verifyEmail = async (payload: UserEmailVerifyPayload) => {
