@@ -115,6 +115,7 @@ const createRequest = async (
 				location: payload.location,
 				title: payload.title,
 				type: payload.type,
+				serviceId: payload.serviceId,
 			},
 		});
 

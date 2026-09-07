@@ -3,6 +3,7 @@ import httpStatus from "http-status";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { DepartmentService } from "./department.service";
+import { DepartmentValidation } from "./department.validation";
 
 const createDepartment = catchAsync(
 	async (req: Request, res: Response, next: NextFunction) => {
@@ -32,7 +33,29 @@ const getAllDepartments = catchAsync(
 	},
 );
 
+const softDeleteDepartment = catchAsync(
+	async (req: Request, res: Response, next: NextFunction) => {
+		const adminInfo = req.authUser!;
+		const params = DepartmentValidation.DepartmentParamsZodSchema.parse(
+			req.params,
+		);
+
+		const result = await DepartmentService.softDeleteDepartment(
+			params.departmentId,
+			adminInfo,
+		);
+
+		sendResponse(res, {
+			success: true,
+			statusCode: httpStatus.CREATED,
+			message: "Department Deleted Successfully!",
+			data: result,
+		});
+	},
+);
+
 export const DepartmentController = {
 	createDepartment,
 	getAllDepartments,
+	softDeleteDepartment,
 };

@@ -12,6 +12,11 @@ const DepartmentCreationZodSchema = z.object({
 		.max(500, "Description cannot exceed 500 characters"),
 });
 
+const DepartmentParamsZodSchema = z.object({
+	departmentId: z.string().min(1, "You must provide a departmentId!"),
+});
+
 export const DepartmentValidation = {
 	DepartmentCreationZodSchema,
+	DepartmentParamsZodSchema,
 };

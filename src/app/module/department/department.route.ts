@@ -16,4 +16,10 @@ router.post(
 
 router.get("/all-departments", DepartmentController.getAllDepartments);
 
+router.delete(
+	"/:departmentId",
+	auth(Role.ADMIN),
+	DepartmentController.softDeleteDepartment,
+);
+
 export const DepartmentRoutes = router;
