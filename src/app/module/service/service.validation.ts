@@ -21,6 +21,11 @@ const ServiceCreationZodSchema = z.object({
 	departmentId: z.string().min(1, "Department ID is required"),
 });
 
+const ServiceParamsZodSchema = z.object({
+	serviceId: z.string().min(1, "You must provide a serviceId!"),
+});
+
 export const ServiceValidation = {
 	ServiceCreationZodSchema,
+	ServiceParamsZodSchema,
 };

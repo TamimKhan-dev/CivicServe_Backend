@@ -16,4 +16,10 @@ router.post(
 
 router.get("/all-services", ServiceController.getAllServices);
 
+router.delete(
+	"/:serviceId",
+	auth(Role.ADMIN),
+	ServiceController.softDeleteService,
+);
+
 export const ServiceRoutes = router;
