@@ -14,13 +14,13 @@ const registerUser = catchAsync(
 	async (req: Request, res: Response, next: NextFunction) => {
 		const payload = req.body;
 
-		const result = await AuthService.registerUser(payload);
+		await AuthService.registerUser(payload);
 
 		sendResponse(res, {
 			success: true,
 			statusCode: httpStatus.CREATED,
-			message: "OTP fetched Successfully(Redis)!",
-			data: result,
+			message: "OTP Sent to Email Successfully!",
+			data: null,
 		});
 	},
 );

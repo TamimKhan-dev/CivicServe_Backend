@@ -1,9 +1,12 @@
 import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
+import ejs from "ejs";
 import httpStatus from "http-status";
 import type { JwtPayload } from "jsonwebtoken";
+import path from "path";
 import config from "../../config";
 import { createUserTokens } from "../../helpers/authTokens";
+import { transporter } from "../../lib/nodemailer";
 import { prisma } from "../../lib/prisma";
 import { redisClient } from "../../lib/redis";
 import { AppError } from "../../utils/AppError";
@@ -14,7 +17,7 @@ import type {
 } from "./auth.interface";
 
 const registerUser = async (payload: UserRegistrationPayload) => {
-	const { email, password, name, phone } = payload;
+	const { email, password, name, phone, profileImage } = payload;
 
 	const isUserExist = await prisma.user.findUnique({
 		where: {
@@ -28,56 +31,55 @@ const registerUser = async (payload: UserRegistrationPayload) => {
 			"User with this email already Exists!",
 		);
 	}
-
 	const hashedPassword = await bcrypt.hash(
 		password,
 		Number(config.bcrypt_salt_rounds),
 	);
 
-	await prisma.user.create({
-		data: {
-			name,
-			password: hashedPassword,
-			email,
-			phone,
-		},
-	});
+	const newUserPayloadKey = `new-user-payload-key:${email}`;
+	const newUserPayloadData = {
+		name,
+		email,
+		phone,
+		password: hashedPassword,
+		profileImage,
+	};
 
 	const expirationValue = 60 * 5;
 	const otp = crypto.randomInt(100000, 1000000).toString();
 	const key = `verify-email-otp:${email}`;
 
+	if (config.node_env === "development") {
+		console.log(`[dev] OTP ${email} : ${otp}`);
+	}
+
+	await redisClient.set(newUserPayloadKey, newUserPayloadData, { ex: expirationValue });
 	await redisClient.set(key, otp, { ex: expirationValue });
 
-	const redisOtp = await redisClient.get(key);
+	const templatePath = path.join(process.cwd(), 'src/app/templates/registration-user-otp.ejs');
 
-	return { otp: redisOtp };
+	const templateData = {
+		name,
+		otp,
+		expiresIn: 5,
+		year: new Date().getFullYear()
+	};
+
+	const html = await ejs.renderFile(templatePath, templateData);
+
+	await transporter.sendMail({
+		from: config.sender_email,
+		to: email,
+		subject: "Email Verification!",
+		html
+	});
 };
 
 const verifyEmail = async (payload: UserEmailVerifyPayload) => {
 	const { otp, email } = payload;
 
-	const isUserExist = await prisma.user.findUnique({
-		where: { email },
-	});
-
-	if (!isUserExist) {
-		throw new AppError(httpStatus.NOT_FOUND, "User not found!");
-	}
-
-	if (isUserExist.status === "SUSPENDED") {
-		throw new AppError(httpStatus.BAD_REQUEST, "User is Suspended");
-	}
-
-	if (isUserExist.emailVerified) {
-		throw new AppError(httpStatus.BAD_REQUEST, "Email ALready Verified");
-	}
-
-	if (isUserExist.deletedAt) {
-		throw new AppError(httpStatus.BAD_REQUEST, "User is Deleted");
-	}
-
 	const otpKey = `verify-email-otp:${email}`;
+	const newUserPayloadKey = `new-user-payload-key:${email}`;
 
 	const redisOtp = await redisClient.get(otpKey);
 
@@ -91,7 +93,38 @@ const verifyEmail = async (payload: UserEmailVerifyPayload) => {
 
 	await redisClient.del(otpKey);
 
-	await prisma.user.update({ where: { email }, data: { emailVerified: true } });
+	const userPayload: UserRegistrationPayload | null =
+		await redisClient.get(newUserPayloadKey);
+
+	if (!userPayload) {
+		throw new AppError(httpStatus.NOT_FOUND, "Cannot found the user!");
+	}
+
+	const newUser: UserRegistrationPayload = userPayload;
+
+	const isUserExist = await prisma.user.findUnique({ where: { email } });
+
+	if (isUserExist) {
+		throw new AppError(httpStatus.BAD_REQUEST, "User Already Exist!");
+	}
+
+	const result = await prisma.user.create({
+		data: {
+			name: newUser.name,
+			email: newUser.email,
+			password: newUser.password,
+			phone: newUser.phone,
+			emailVerified: true,
+			profileImage: newUser.profileImage,
+		},
+		omit: {
+			password: true,
+		},
+	});
+
+	await redisClient.del(newUserPayloadKey);
+
+	return result;
 };
 
 const refreshToken = async (token: string) => {

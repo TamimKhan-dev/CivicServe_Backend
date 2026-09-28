@@ -264,12 +264,15 @@ const getSingleRequest = async (userInfo: RequestUser, requestId: string) => {
 	const { userId } = userInfo;
 
 	const request = await prisma.request.findUnique({
-		where: { id: requestId }
+		where: { id: requestId },
 	});
 
 	if (!request) {
-		throw new AppError(httpStatus.NOT_FOUND, "Request with this Id doesn't Exist!");
-	};
+		throw new AppError(
+			httpStatus.NOT_FOUND,
+			"Request with this Id doesn't Exist!",
+		);
+	}
 
 	return await prisma.request.findUnique({
 		where: {
@@ -578,7 +581,7 @@ const uploadRequestImage = async (buffer: Buffer, requestId: string) => {
 		data: {
 			imageUrl: cloudinaryResult.secure_url,
 			imagePublicId: cloudinaryResult.public_id,
-		}
+		},
 	});
 
 	if (request?.imagePublicId && request.imageUrl) {

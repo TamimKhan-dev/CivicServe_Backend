@@ -1,5 +1,6 @@
 import app from "./app";
 import config from "./app/config";
+import { transporter } from "./app/lib/nodemailer";
 import { prisma } from "./app/lib/prisma";
 import { seedTesterAdmin, seedTesterStaff } from "./app/utils/seed";
 
@@ -9,6 +10,9 @@ const main = async () => {
 	try {
 		await prisma.$connect();
 		console.log("Connected to the database successfully.");
+
+		await transporter.verify();
+		console.log("Nodemailer Connected Successfully.");
 
 		await seedTesterAdmin();
 		await seedTesterStaff();

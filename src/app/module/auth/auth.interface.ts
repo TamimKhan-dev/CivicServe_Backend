@@ -5,6 +5,7 @@ export interface UserRegistrationPayload {
 	email: string;
 	password: string;
 	phone?: string;
+	profileImage?: string;
 }
 
 export interface UserEmailVerifyPayload {
