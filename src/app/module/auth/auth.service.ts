@@ -1,11 +1,13 @@
 import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
+import type { UploadApiResponse } from "cloudinary";
 import ejs from "ejs";
 import httpStatus from "http-status";
 import type { JwtPayload } from "jsonwebtoken";
 import path from "path";
 import config from "../../config";
 import { createUserTokens } from "../../helpers/authTokens";
+import { cloudinary } from "../../lib/cloudinary";
 import { transporter } from "../../lib/nodemailer";
 import { prisma } from "../../lib/prisma";
 import { redisClient } from "../../lib/redis";
@@ -17,7 +19,7 @@ import type {
 } from "./auth.interface";
 
 const registerUser = async (payload: UserRegistrationPayload) => {
-	const { email, password, name, phone, profileImage } = payload;
+	const { email, password, name, phone } = payload;
 
 	const isUserExist = await prisma.user.findUnique({
 		where: {
@@ -41,8 +43,7 @@ const registerUser = async (payload: UserRegistrationPayload) => {
 		name,
 		email,
 		phone,
-		password: hashedPassword,
-		profileImage,
+		password: hashedPassword
 	};
 
 	const expirationValue = 60 * 5;
@@ -53,16 +54,21 @@ const registerUser = async (payload: UserRegistrationPayload) => {
 		console.log(`[dev] OTP ${email} : ${otp}`);
 	}
 
-	await redisClient.set(newUserPayloadKey, newUserPayloadData, { ex: expirationValue });
+	await redisClient.set(newUserPayloadKey, newUserPayloadData, {
+		ex: expirationValue,
+	});
 	await redisClient.set(key, otp, { ex: expirationValue });
 
-	const templatePath = path.join(process.cwd(), 'src/app/templates/registration-user-otp.ejs');
+	const templatePath = path.join(
+		process.cwd(),
+		"src/app/templates/registration-user-otp.ejs",
+	);
 
 	const templateData = {
 		name,
 		otp,
 		expiresIn: 5,
-		year: new Date().getFullYear()
+		year: new Date().getFullYear(),
 	};
 
 	const html = await ejs.renderFile(templatePath, templateData);
@@ -71,7 +77,7 @@ const registerUser = async (payload: UserRegistrationPayload) => {
 		from: config.sender_email,
 		to: email,
 		subject: "Email Verification!",
-		html
+		html,
 	});
 };
 
@@ -90,8 +96,6 @@ const verifyEmail = async (payload: UserEmailVerifyPayload) => {
 	if (redisOtp.toString() !== otp.toString()) {
 		throw new AppError(httpStatus.BAD_REQUEST, "OTP Does Not Match");
 	}
-
-	await redisClient.del(otpKey);
 
 	const userPayload: UserRegistrationPayload | null =
 		await redisClient.get(newUserPayloadKey);
@@ -115,13 +119,13 @@ const verifyEmail = async (payload: UserEmailVerifyPayload) => {
 			password: newUser.password,
 			phone: newUser.phone,
 			emailVerified: true,
-			profileImage: newUser.profileImage,
 		},
 		omit: {
 			password: true,
 		},
 	});
 
+	await redisClient.del(otpKey);
 	await redisClient.del(newUserPayloadKey);
 
 	return result;
@@ -176,9 +180,69 @@ const getMe = async (userId: string) => {
 	return isUserExist;
 };
 
+const updateProfileImage = async (buffer: Buffer, userId?: string) => {
+	let user = null;
+	if (userId) {
+		user = await prisma.user.findUnique({
+			where: { id: userId },
+			select: { profileImage: true, profileImageId: true },
+		});
+
+		if (!user) {
+			throw new AppError(httpStatus.NOT_FOUND, "Cannot find user!");
+		}
+	}
+
+	const cloudinaryResult = await new Promise<UploadApiResponse>(
+		(resolve, reject) => {
+			cloudinary.uploader
+				.upload_stream(
+					{
+						resource_type: "auto",
+					},
+
+					async (error, result) => {
+						if (error) {
+							return reject(error);
+						}
+
+						if (!result) {
+							return reject(new Error("No result returned from Cloudinary"));
+						}
+
+						resolve(result);
+					},
+				)
+				.end(buffer);
+		},
+	);
+
+	if (user) {
+		const result = await prisma.user.update({
+			where: { id: userId },
+			data: {
+				profileImage: cloudinaryResult.secure_url,
+				profileImageId: cloudinaryResult.public_id,
+			},
+		});
+
+		if (user?.profileImageId && user.profileImage) {
+			await cloudinary.uploader.destroy(user.profileImageId);
+		}
+
+		return result;
+	}
+
+	return {
+		profileImage: cloudinaryResult.secure_url,
+		profileImageId: cloudinaryResult.public_id,
+	};
+};
+
 export const AuthService = {
 	getMe,
 	verifyEmail,
 	registerUser,
 	refreshToken,
+	updateProfileImage,
 };

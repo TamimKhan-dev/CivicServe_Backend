@@ -13,7 +13,6 @@ const UserRegistrationZodSchema = z.object({
 		.regex(/[A-Z]/, "Password must contain atleast 1 Uppercase Letter")
 		.regex(/[0-9]/, "Password must contain atleast 1 Number"),
 	phone: z.string().optional(),
-	profileImage: z.string().optional(),
 });
 
 const UserCredentialLoginZodSchema = z.object({

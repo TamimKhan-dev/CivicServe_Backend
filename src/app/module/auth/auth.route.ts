@@ -28,7 +28,7 @@ router.get(
 );
 
 router.get("/google/callback", AuthController.googleLoginCallback);
-router.post("/logout", AuthController.logout);
+router.post("/logout", auth(Role.ADMIN, Role.CITIZEN, Role.STAFF), AuthController.logout);
 router.post("/refresh-token", AuthController.refreshToken);
 router.post(
 	"/verify-email",
@@ -40,5 +40,11 @@ router.get(
 	auth(Role.ADMIN, Role.CITIZEN, Role.STAFF),
 	AuthController.getMe,
 );
+
+// router.patch(
+// 	"/profile-image/:userId?",
+// 	upload.single("profileImage"),
+// 	AuthController.updateProfileImage,
+// );
 
 export const AuthRoutes = router;

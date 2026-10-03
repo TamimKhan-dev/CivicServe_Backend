@@ -106,3 +106,54 @@ export const seedTesterStaff = async () => {
 		});
 	}
 };
+
+export const seedTesterCitizen = async () => {
+	try {
+		const isTesterCitizenExist = await prisma.user.findUnique({
+			where: {
+				email: config.tester_citizen_email,
+			},
+		});
+
+		if (isTesterCitizenExist) {
+			console.log("Tester Citizen Already Exist!");
+			return;
+		}
+
+		const name = config.tester_citizen_name;
+		const email = config.tester_citizen_email;
+		const password = config.tester_citizen_password;
+
+		if (!name || !email || !password) {
+			throw new AppError(
+				httpStatus.INTERNAL_SERVER_ERROR,
+				"Citizen Name , Email, Password Missing In Env File!!!",
+			);
+		}
+
+		const hashedPassword = await bcrypt.hash(
+			password,
+			Number(config.bcrypt_salt_rounds),
+		);
+
+		await prisma.user.create({
+			data: {
+				name,
+				email,
+				password: hashedPassword,
+				role: Role.CITIZEN,
+				emailVerified: true,
+			},
+		});
+
+		console.log("Tester Citizen Created Successfully!");
+	} catch (error: any) {
+		console.log("Error Seeding Tester Citizen: ", error);
+
+		await prisma.user.delete({
+			where: {
+				email: config.tester_citizen_email,
+			},
+		});
+	}
+};

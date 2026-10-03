@@ -106,8 +106,9 @@ const googleLoginCallback = catchAsync(
 
 				setAuthCookie(res, userTokens);
 
-				res.redirect(`${config.frontend_url}/login?success=true`);
+				res.redirect(`${config.frontend_url}/?success=true`);
 			} catch (error) {
+				res.redirect(`${config.frontend_url}/?success=false`);
 				next(error);
 			}
 		})(req, res, next);
@@ -182,6 +183,27 @@ const getMe = catchAsync(
 	},
 );
 
+const updateProfileImage = catchAsync(
+	async (req: Request, res: Response, next: NextFunction) => {
+		const userId = req.params.userId;
+		if (!req.file) {
+			throw new AppError(httpStatus.BAD_REQUEST, "No File Provided.");
+		}
+
+		const result = await AuthService.updateProfileImage(
+			req.file.buffer,
+			userId as string,
+		);
+
+		sendResponse(res, {
+			statusCode: httpStatus.OK,
+			success: true,
+			message: "Profile Image uploaded successfully",
+			data: result,
+		});
+	},
+);
+
 export const AuthController = {
 	getMe,
 	logout,
@@ -189,5 +211,6 @@ export const AuthController = {
 	registerUser,
 	refreshToken,
 	credentialLogin,
+	updateProfileImage,
 	googleLoginCallback,
 };

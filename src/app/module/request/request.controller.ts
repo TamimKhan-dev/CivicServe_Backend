@@ -74,17 +74,12 @@ const getAllRequests = catchAsync(
 
 const assignStaff = catchAsync(
 	async (req: Request, res: Response, next: NextFunction) => {
-		const adminInfo = req.authUser!;
 		const { staffId } = req.body;
 		const { requestId } = RequestValidation.RequestParamsZodSchema.parse(
 			req.params,
 		);
 
-		const result = await RequestService.assignStaff(
-			requestId,
-			staffId,
-			adminInfo,
-		);
+		const result = await RequestService.assignStaff(requestId, staffId);
 
 		sendResponse(res, {
 			success: true,

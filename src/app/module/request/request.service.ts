@@ -407,11 +407,7 @@ const getAllRequests = async (userInfo: RequestUser, query: IRequestQuery) => {
 	};
 };
 
-const assignStaff = async (
-	requestId: string,
-	staffId: string,
-	adminInfo: RequestUser,
-) => {
+const assignStaff = async (requestId: string, staffId: string) => {
 	const [request, staff] = await Promise.all([
 		prisma.request.findUnique({
 			where: { id: requestId },
