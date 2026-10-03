@@ -28,7 +28,11 @@ router.get(
 );
 
 router.get("/google/callback", AuthController.googleLoginCallback);
-router.post("/logout", auth(Role.ADMIN, Role.CITIZEN, Role.STAFF), AuthController.logout);
+router.post(
+	"/logout",
+	auth(Role.ADMIN, Role.CITIZEN, Role.STAFF),
+	AuthController.logout,
+);
 router.post("/refresh-token", AuthController.refreshToken);
 router.post(
 	"/verify-email",

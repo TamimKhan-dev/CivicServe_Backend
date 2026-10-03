@@ -260,6 +260,24 @@ const getMyRequests = async (userInfo: RequestUser, query: IRequestQuery) => {
 	};
 };
 
+const citizenStat = async (userInfo: RequestUser) => {
+	const { userId } = userInfo;
+
+	const [ totalRequests, pendingRequests, inProgressRequests, resolvedRequests] = await Promise.all([
+		prisma.request.count({ where: { userId }}),
+		prisma.request.count({where: {userId, status: RequestStatus.SUBMITTED}}),
+		prisma.request.count({where: {userId, status: RequestStatus.IN_PROGRESS}}),
+		prisma.request.count({where: {userId, status: RequestStatus.RESOLVED}}),
+	]);
+
+	return {
+		totalRequests,
+		pendingRequests,
+		inProgressRequests,
+		resolvedRequests
+	}
+};
+
 const getSingleRequest = async (userInfo: RequestUser, requestId: string) => {
 	const { userId } = userInfo;
 
@@ -589,6 +607,7 @@ const uploadRequestImage = async (buffer: Buffer, requestId: string) => {
 
 export const RequestService = {
 	assignStaff,
+	citizenStat,
 	createRequest,
 	getMyRequests,
 	getAllRequests,

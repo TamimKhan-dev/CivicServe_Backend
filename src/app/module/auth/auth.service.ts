@@ -43,7 +43,7 @@ const registerUser = async (payload: UserRegistrationPayload) => {
 		name,
 		email,
 		phone,
-		password: hashedPassword
+		password: hashedPassword,
 	};
 
 	const expirationValue = 60 * 5;
