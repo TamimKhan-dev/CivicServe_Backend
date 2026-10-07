@@ -292,6 +292,24 @@ const citizenStat = async (userInfo: RequestUser) => {
 	};
 };
 
+const staffStat = async (staffInfo: RequestUser) => {
+	const { userId: staffId } = staffInfo;
+
+	const [totalAssigned, pendingAction, inProgress, resolved] = await Promise.all([
+		prisma.request.count({ where: { assignedStaffId: staffId }}),
+		prisma.request.count({where: { assignedStaffId: staffId, status: RequestStatus.SUBMITTED}}),
+		prisma.request.count({where: { assignedStaffId: staffId, status: RequestStatus.IN_PROGRESS}}),
+		prisma.request.count({where: { assignedStaffId: staffId, status: RequestStatus.RESOLVED}}),
+	]);
+
+	return {
+		totalAssigned,
+		pendingAction,
+		inProgress,
+		resolved,
+	};
+};
+
 const getSingleRequest = async (userInfo: RequestUser, requestId: string) => {
 	const { userId } = userInfo;
 
@@ -626,6 +644,7 @@ const uploadRequestImage = async (buffer: Buffer, requestId: string) => {
 };
 
 export const RequestService = {
+	staffStat,
 	assignStaff,
 	citizenStat,
 	createRequest,

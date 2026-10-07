@@ -37,6 +37,19 @@ const citizenStat = catchAsync(
 	},
 );
 
+const staffStat = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+	const staffInfo = req.authUser!;
+
+	const result = await RequestService.staffStat(staffInfo);
+
+	sendResponse(res, {
+			success: true,
+			statusCode: httpStatus.OK,
+			message: "Staff Stat fetched Successfully!",
+			data: result,
+		});
+});
+
 const getMyRequests = catchAsync(
 	async (req: Request, res: Response, next: NextFunction) => {
 		const citizenInfo = req.authUser!;
@@ -148,6 +161,7 @@ const uploadRequestImage = catchAsync(
 );
 
 export const RequestController = {
+	staffStat,
 	assignStaff,
 	citizenStat,
 	createRequest,
