@@ -13,4 +13,10 @@ router.post(
 
 router.post("/webhook", PaymentController.handleWebhook);
 
+router.get(
+	"/session/:sessionId",
+	auth(Role.CITIZEN),
+	PaymentController.getPaymentInfo,
+);
+
 export const PaymentRoutes = router;

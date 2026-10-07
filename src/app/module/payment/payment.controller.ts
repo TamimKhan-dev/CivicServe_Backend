@@ -40,7 +40,27 @@ const handleWebhook = catchAsync(
 	},
 );
 
+const getPaymentInfo = catchAsync(
+	async (req: Request, res: Response, next: NextFunction) => {
+		const citizen = req.authUser!;
+		const params = PaymentValidation.SessionParamsZodSchema.parse(req.params);
+
+		const result = await PaymentService.getPaymentInfo(
+			citizen,
+			params.sessionId,
+		);
+
+		sendResponse(res, {
+			success: true,
+			statusCode: httpStatus.OK,
+			message: "Payment Details Fetched SuccessFully!",
+			data: result,
+		});
+	},
+);
+
 export const PaymentController = {
 	createCeckoutSession,
+	getPaymentInfo,
 	handleWebhook,
 };

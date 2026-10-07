@@ -76,7 +76,7 @@ const createCeckoutSession = async (
 		},
 
 		success_url: `${config.frontend_url}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-		cancel_url: `${config.frontend_url}/payment/cancel?session_id={CHECKOUT_SESSION_ID}`,
+		cancel_url: `${config.frontend_url}/payment/cancel?requestId=${requestId}`,
 	});
 
 	return {
@@ -102,7 +102,32 @@ const handleWebhook = async (payload: Buffer, signature: string) => {
 	}
 };
 
+const getPaymentInfo = async (citizen: RequestUser, sessionId: string) => {
+	const { userId } = citizen;
+
+	const payment = await prisma.payment.findUnique({
+		where: { userId, transactionId: sessionId },
+		include: {
+			request: {
+				select: {
+					service: { select: { name: true } },
+				},
+			},
+		},
+	});
+
+	if (!payment) {
+		throw new AppError(
+			httpStatus.NOT_FOUND,
+			"No Payment details with the following info!",
+		);
+	}
+
+	return payment;
+};
+
 export const PaymentService = {
 	createCeckoutSession,
+	getPaymentInfo,
 	handleWebhook,
 };

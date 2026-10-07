@@ -36,7 +36,7 @@ export const handleCheckoutCompleted = async (
 		where: { id: paymentId },
 		data: {
 			status: PaymentStatus.PAID,
-			transactionId: session.payment_intent as string,
+			transactionId: session.id,
 			paidAt: new Date(),
 		},
 	});

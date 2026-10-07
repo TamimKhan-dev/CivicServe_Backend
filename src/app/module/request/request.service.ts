@@ -240,6 +240,13 @@ const getMyRequests = async (userInfo: RequestUser, query: IRequestQuery) => {
 					fee: true,
 				},
 			},
+			payment: {
+				select: {
+					id: true,
+					status: true,
+					amount: true,
+				},
+			},
 		},
 	});
 
@@ -263,19 +270,26 @@ const getMyRequests = async (userInfo: RequestUser, query: IRequestQuery) => {
 const citizenStat = async (userInfo: RequestUser) => {
 	const { userId } = userInfo;
 
-	const [ totalRequests, pendingRequests, inProgressRequests, resolvedRequests] = await Promise.all([
-		prisma.request.count({ where: { userId }}),
-		prisma.request.count({where: {userId, status: RequestStatus.SUBMITTED}}),
-		prisma.request.count({where: {userId, status: RequestStatus.IN_PROGRESS}}),
-		prisma.request.count({where: {userId, status: RequestStatus.RESOLVED}}),
-	]);
+	const [totalRequests, pendingRequests, inProgressRequests, resolvedRequests] =
+		await Promise.all([
+			prisma.request.count({ where: { userId } }),
+			prisma.request.count({
+				where: { userId, status: RequestStatus.SUBMITTED },
+			}),
+			prisma.request.count({
+				where: { userId, status: RequestStatus.IN_PROGRESS },
+			}),
+			prisma.request.count({
+				where: { userId, status: RequestStatus.RESOLVED },
+			}),
+		]);
 
 	return {
 		totalRequests,
 		pendingRequests,
 		inProgressRequests,
-		resolvedRequests
-	}
+		resolvedRequests,
+	};
 };
 
 const getSingleRequest = async (userInfo: RequestUser, requestId: string) => {
@@ -296,6 +310,12 @@ const getSingleRequest = async (userInfo: RequestUser, requestId: string) => {
 		where: {
 			id: requestId,
 			userId,
+		},
+		select: {
+			id: true,
+			service: { select: { name: true } },
+			user: { select: { name: true } },
+			payment: { select: { amount: true } },
 		},
 	});
 };
