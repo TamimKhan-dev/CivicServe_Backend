@@ -267,6 +267,23 @@ const getMyRequests = async (userInfo: RequestUser, query: IRequestQuery) => {
 	};
 };
 
+const adminStats = async () => {
+	const [totalRequests, pendingRequests, inProgress, totalUsers] =
+		await Promise.all([
+			prisma.request.count(),
+			prisma.request.count({ where: { status: RequestStatus.SUBMITTED } }),
+			prisma.request.count({ where: { status: RequestStatus.IN_PROGRESS } }),
+			prisma.user.count(),
+		]);
+
+	return {
+		totalRequests,
+		pendingRequests,
+		inProgress,
+		totalUsers,
+	};
+};
+
 const citizenStat = async (userInfo: RequestUser) => {
 	const { userId } = userInfo;
 
@@ -295,12 +312,19 @@ const citizenStat = async (userInfo: RequestUser) => {
 const staffStat = async (staffInfo: RequestUser) => {
 	const { userId: staffId } = staffInfo;
 
-	const [totalAssigned, pendingAction, inProgress, resolved] = await Promise.all([
-		prisma.request.count({ where: { assignedStaffId: staffId }}),
-		prisma.request.count({where: { assignedStaffId: staffId, status: RequestStatus.SUBMITTED}}),
-		prisma.request.count({where: { assignedStaffId: staffId, status: RequestStatus.IN_PROGRESS}}),
-		prisma.request.count({where: { assignedStaffId: staffId, status: RequestStatus.RESOLVED}}),
-	]);
+	const [totalAssigned, pendingAction, inProgress, resolved] =
+		await Promise.all([
+			prisma.request.count({ where: { assignedStaffId: staffId } }),
+			prisma.request.count({
+				where: { assignedStaffId: staffId, status: RequestStatus.ASSIGNED },
+			}),
+			prisma.request.count({
+				where: { assignedStaffId: staffId, status: RequestStatus.IN_PROGRESS },
+			}),
+			prisma.request.count({
+				where: { assignedStaffId: staffId, status: RequestStatus.RESOLVED },
+			}),
+		]);
 
 	return {
 		totalAssigned,
@@ -441,6 +465,13 @@ const getAllRequests = async (userInfo: RequestUser, query: IRequestQuery) => {
 					id: true,
 					name: true,
 					fee: true,
+				},
+			},
+			payment: {
+				select: {
+					id: true,
+					status: true,
+					amount: true,
 				},
 			},
 		},
@@ -645,6 +676,7 @@ const uploadRequestImage = async (buffer: Buffer, requestId: string) => {
 
 export const RequestService = {
 	staffStat,
+	adminStats,
 	assignStaff,
 	citizenStat,
 	createRequest,

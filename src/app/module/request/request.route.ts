@@ -38,7 +38,7 @@ router.patch(
 
 router.get("/my-requests", auth(Role.CITIZEN), RequestController.getMyRequests);
 router.get("/citizen-stat", auth(Role.CITIZEN), RequestController.citizenStat);
-
+router.get("/admin-stats", auth(Role.ADMIN), RequestController.adminStats);
 router.get("/staff-stats", auth(Role.STAFF), RequestController.staffStat);
 router.get(
 	"/all-requests",

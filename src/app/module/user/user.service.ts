@@ -3,6 +3,13 @@ import { Role } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 import type { RequestUser } from "../../middleware/checkAuth";
 import { AppError } from "../../utils/AppError";
+import {
+	deleteFromCloudinary,
+	uploadToCloudinary,
+} from "../../utils/cloudinary";
+import type { UploadApiResponse } from "cloudinary";
+import type { Prisma } from "../../../generated/prisma/client";
+import type { IUpdatedUser } from "./user.interface";
 
 const getAllStaffs = async () => {
 	return await prisma.user.findMany({
@@ -79,7 +86,60 @@ const softDeleteUser = async (adminInfo: RequestUser, userId: string) => {
 	return result;
 };
 
+const updateUserProfile = async (
+	userId: string,
+	payload: {
+		name?: string;
+		phone?: string;
+		file?: Express.Multer.File;
+	},
+) => {
+	const user = await prisma.user.findUnique({ where: { id: userId } });
+
+	if (!user || user.deletedAt) {
+		throw new AppError(httpStatus.NOT_FOUND, "User not found");
+	}
+
+	const data: Prisma.UserUpdateInput = {};
+	if (payload.name) data.name = payload.name;
+	if (payload.phone) data.phone = payload.phone;
+
+	let uploaded: UploadApiResponse | undefined;
+	if (payload.file) {
+		uploaded = await uploadToCloudinary(payload.file.buffer, "profiles");
+		data.profileImage = uploaded.secure_url;
+		data.profileImageId = uploaded.public_id;
+	}
+
+	let updatedUser: IUpdatedUser;
+	try {
+		updatedUser = await prisma.user.update({
+			where: { id: userId },
+			data,
+			select: {
+				id: true,
+				name: true,
+				email: true,
+				phone: true,
+				role: true,
+				profileImage: true,
+				departmentId: true,
+			},
+		});
+	} catch (error) {
+		if (uploaded) await deleteFromCloudinary(uploaded.public_id);
+		throw error;
+	}
+
+	if (uploaded && user.profileImageId) {
+		await deleteFromCloudinary(user.profileImageId);
+	}
+
+	return updatedUser;
+};
+
 export const UserService = {
 	getAllStaffs,
 	softDeleteUser,
+	updateUserProfile,
 };

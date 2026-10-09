@@ -4,6 +4,7 @@ import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { UserService } from "./user.service";
 import { UserValidation } from "./user.validation";
+import { AppError } from "../../utils/AppError";
 
 const getAllStaffs = catchAsync(
 	async (req: Request, res: Response, next: NextFunction) => {
@@ -34,7 +35,35 @@ const softDeleteUser = catchAsync(
 	},
 );
 
+const updateUserProfile = catchAsync(
+	async (req: Request, res: Response, next: NextFunction) => {
+		const { userId } = req.params;
+		const { name, phone } = req.body;
+
+		if (!userId) {
+			throw new AppError(
+				httpStatus.NOT_FOUND,
+				"User id is missing inside params!",
+			);
+		}
+
+		const result = await UserService.updateUserProfile(userId as string, {
+			name,
+			phone,
+			file: req.file,
+		});
+
+		sendResponse(res, {
+			statusCode: 200,
+			success: true,
+			message: "Profile updated successfully",
+			data: result,
+		});
+	},
+);
+
 export const UserController = {
 	getAllStaffs,
 	softDeleteUser,
+	updateUserProfile,
 };

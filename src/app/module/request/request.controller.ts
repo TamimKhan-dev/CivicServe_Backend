@@ -22,6 +22,19 @@ const createRequest = catchAsync(
 	},
 );
 
+const adminStats = catchAsync(
+	async (req: Request, res: Response, next: NextFunction) => {
+		const result = await RequestService.adminStats();
+
+		sendResponse(res, {
+			success: true,
+			statusCode: httpStatus.CREATED,
+			message: "Request Sent Successfully!",
+			data: result,
+		});
+	},
+);
+
 const citizenStat = catchAsync(
 	async (req: Request, res: Response, next: NextFunction) => {
 		const userInfo = req.authUser!;
@@ -37,18 +50,20 @@ const citizenStat = catchAsync(
 	},
 );
 
-const staffStat = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-	const staffInfo = req.authUser!;
+const staffStat = catchAsync(
+	async (req: Request, res: Response, next: NextFunction) => {
+		const staffInfo = req.authUser!;
 
-	const result = await RequestService.staffStat(staffInfo);
+		const result = await RequestService.staffStat(staffInfo);
 
-	sendResponse(res, {
+		sendResponse(res, {
 			success: true,
 			statusCode: httpStatus.OK,
 			message: "Staff Stat fetched Successfully!",
 			data: result,
 		});
-});
+	},
+);
 
 const getMyRequests = catchAsync(
 	async (req: Request, res: Response, next: NextFunction) => {
@@ -162,6 +177,7 @@ const uploadRequestImage = catchAsync(
 
 export const RequestController = {
 	staffStat,
+	adminStats,
 	assignStaff,
 	citizenStat,
 	createRequest,
