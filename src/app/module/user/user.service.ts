@@ -102,7 +102,7 @@ const updateUserProfile = async (
 
 	const data: Prisma.UserUpdateInput = {};
 	if (payload.name) data.name = payload.name;
-	if (payload.phone) data.phone = payload.phone;
+	if (payload.phone !== undefined) data.phone = payload.phone || null;
 
 	let uploaded: UploadApiResponse | undefined;
 	if (payload.file) {

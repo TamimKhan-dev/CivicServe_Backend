@@ -170,7 +170,8 @@ const getMe = async (userId: string) => {
 		where: {
 			id: userId,
 		},
-		omit: { password: true },
+		omit: { password: true }, 
+		include: { department: { select: { name: true }}}
 	});
 
 	if (!isUserExist) {

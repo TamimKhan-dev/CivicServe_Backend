@@ -4,7 +4,7 @@ const UserParamsZodSchema = z.object({
 	userId: z.string().min(1, "You must provide a userId!"),
 });
 
-const MAX_SIZE = 2 * 1024 * 1024; // 2MB
+const MAX_SIZE = 2 * 1024 * 1024;
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export const ProfileUpdateZodSchema = z.object({
@@ -15,9 +15,10 @@ export const ProfileUpdateZodSchema = z.object({
 		.optional(),
 	phone: z
 		.string()
-		.trim()
-		.regex(/^[+\d\s()-]{7,20}$/, "Enter a valid phone number")
-		.optional(),
+	    .trim()
+	    .regex(/^[+\d\s()-]{7,20}$/, "Enter a valid phone number")
+	    .or(z.literal(""))
+	    .optional(),
 	image: z
 		.object({
 			mimetype: z

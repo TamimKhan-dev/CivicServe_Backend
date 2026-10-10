@@ -44,6 +44,7 @@ const getAllServices = async () => {
 		omit: {
 			deletedAt: true,
 		},
+		include: { department: true}
 	});
 };
 
