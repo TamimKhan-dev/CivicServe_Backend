@@ -1,10 +1,10 @@
 import crypto from "node:crypto";
+import path from "node:path";
 import bcrypt from "bcryptjs";
 import type { UploadApiResponse } from "cloudinary";
 import ejs from "ejs";
 import httpStatus from "http-status";
 import type { JwtPayload } from "jsonwebtoken";
-import path from "path";
 import config from "../../config";
 import { createUserTokens } from "../../helpers/authTokens";
 import { cloudinary } from "../../lib/cloudinary";
@@ -170,8 +170,8 @@ const getMe = async (userId: string) => {
 		where: {
 			id: userId,
 		},
-		omit: { password: true }, 
-		include: { department: { select: { name: true }}}
+		omit: { password: true },
+		include: { department: { select: { name: true } } },
 	});
 
 	if (!isUserExist) {

@@ -1,4 +1,6 @@
+import type { UploadApiResponse } from "cloudinary";
 import httpStatus from "http-status";
+import type { Prisma } from "../../../generated/prisma/client";
 import { Role } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 import type { RequestUser } from "../../middleware/checkAuth";
@@ -7,8 +9,6 @@ import {
 	deleteFromCloudinary,
 	uploadToCloudinary,
 } from "../../utils/cloudinary";
-import type { UploadApiResponse } from "cloudinary";
-import type { Prisma } from "../../../generated/prisma/client";
 import type { IUpdatedUser } from "./user.interface";
 
 const getAllStaffs = async () => {

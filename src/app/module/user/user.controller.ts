@@ -1,10 +1,10 @@
 import type { NextFunction, Request, Response } from "express";
 import httpStatus from "http-status";
+import { AppError } from "../../utils/AppError";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
 import { UserService } from "./user.service";
 import { UserValidation } from "./user.validation";
-import { AppError } from "../../utils/AppError";
 
 const getAllStaffs = catchAsync(
 	async (req: Request, res: Response, next: NextFunction) => {

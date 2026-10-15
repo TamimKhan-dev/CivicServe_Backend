@@ -20,6 +20,7 @@ import { PaymentRoutes } from "./app/module/payment/payment.route";
 import { RequestRoutes } from "./app/module/request/request.route";
 import { ServiceRoutes } from "./app/module/service/service.route";
 import { StaffApplicationRoutes } from "./app/module/staffApplication/staffApplication.route";
+import { StatsRoutes } from "./app/module/stats/stats.route";
 import { UserRoutes } from "./app/module/user/user.route";
 
 const app: Application = express();
@@ -43,6 +44,7 @@ app.use(cookieParser());
 app.use("/api/v1/auth", AuthRoutes);
 app.use("/api/v1/user", UserRoutes);
 app.use("/api/v1/payments", PaymentRoutes);
+app.use("/api/v1/stats", StatsRoutes);
 app.use("/api/v1/request", RequestRoutes);
 app.use("/api/v1/service", ServiceRoutes);
 app.use("/api/v1/category", CategoryRoutes);

@@ -15,10 +15,10 @@ export const ProfileUpdateZodSchema = z.object({
 		.optional(),
 	phone: z
 		.string()
-	    .trim()
-	    .regex(/^[+\d\s()-]{7,20}$/, "Enter a valid phone number")
-	    .or(z.literal(""))
-	    .optional(),
+		.trim()
+		.regex(/^[+\d\s()-]{7,20}$/, "Enter a valid phone number")
+		.or(z.literal(""))
+		.optional(),
 	image: z
 		.object({
 			mimetype: z
